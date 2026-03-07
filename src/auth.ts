@@ -3,6 +3,8 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET,
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
@@ -10,22 +12,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string
-        const password = credentials?.password as string
+        try {
+          const email = (credentials?.email ?? '') as string
+          const password = (credentials?.password ?? '') as string
 
-        if (!email || !password) return null
-        if (email !== process.env.ADMIN_EMAIL) return null
+          if (!email || !password) return null
 
-        const adminPassword = process.env.ADMIN_PASSWORD ?? ''
+          const adminEmail = process.env.ADMIN_EMAIL ?? ''
+          const adminPassword = process.env.ADMIN_PASSWORD ?? ''
 
-        // 平文比較（bcryptハッシュでも動作）
-        const isValid = adminPassword.startsWith('$2')
-          ? await bcrypt.compare(password, adminPassword)
-          : password === adminPassword
+          if (!adminEmail || !adminPassword) {
+            console.error('[auth] ADMIN_EMAIL or ADMIN_PASSWORD is not set')
+            return null
+          }
 
-        if (!isValid) return null
+          if (email !== adminEmail) return null
 
-        return { id: 'admin', name: 'Admin', email }
+          const isValid = adminPassword.startsWith('$2')
+            ? await bcrypt.compare(password, adminPassword)
+            : password === adminPassword
+
+          if (!isValid) return null
+
+          return { id: 'admin', name: 'Admin', email }
+        } catch (err) {
+          console.error('[auth] authorize error:', err)
+          return null
+        }
       },
     }),
   ],

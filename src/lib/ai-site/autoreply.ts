@@ -1,9 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { Resend } from 'resend'
 
-const anthropic = new Anthropic()
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 interface AutoReplyInput {
   firmName: string
   services: string[]
@@ -17,6 +14,7 @@ interface AutoReplyInput {
 
 /** AI自動返信メッセージを生成する */
 export async function generateAutoReply(input: AutoReplyInput): Promise<string> {
+  const anthropic = new Anthropic()
   const prompt = `
 あなたは「${input.firmName}」の行政書士事務所のアシスタントです。
 以下のお問い合わせに対して、丁寧で専門的な初回返信メールを書いてください。
@@ -59,6 +57,7 @@ export async function sendAutoReplyEmail({
 }): Promise<boolean> {
   // Resend の fromAddress は環境変数 or デフォルト
   // .env の RESEND_FROM または RESEND_FROM_EMAIL どちらでも動作する
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const fromAddress = process.env.RESEND_FROM ?? process.env.RESEND_FROM_EMAIL ?? 'noreply@example.com'
 
   const { error } = await resend.emails.send({

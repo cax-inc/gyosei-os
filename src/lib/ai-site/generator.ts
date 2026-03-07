@@ -2,8 +2,6 @@ import Anthropic from '@anthropic-ai/sdk'
 import { PREF_TO_SLUG } from './types'
 import type { GenerateInput, SiteContent } from './types'
 
-const anthropic = new Anthropic()
-
 const SYSTEM_PROMPT = `あなたは行政書士事務所専門のプロコピーライターです。
 提供された情報をもとに、集客力の高いWebサイトコンテンツをJSON形式で生成してください。
 出力はJSONのみ。マークダウンのコードブロック（\`\`\`json など）は絶対に使わないでください。
@@ -11,6 +9,7 @@ const SYSTEM_PROMPT = `あなたは行政書士事務所専門のプロコピー
 
 /** サイトコンテンツをAI生成する */
 export async function generateSiteContent(input: GenerateInput): Promise<SiteContent> {
+  const anthropic = new Anthropic()
   const servicesText = input.services.join('、')
   const stylesText = input.styles.length > 0 ? input.styles.join('、') : '信頼感重視'
 
@@ -102,6 +101,7 @@ ${input.ownerBio ? `代表者経歴: ${input.ownerBio}` : ''}
 
 /** SEOキーワード候補を生成する（サイト生成と同時に呼ぶ） */
 export async function generateSeoKeywords(input: GenerateInput): Promise<string[]> {
+  const anthropic = new Anthropic()
   const prefecture = input.prefecture.replace(/[都道府県]$/, '')
 
   const prompt = `

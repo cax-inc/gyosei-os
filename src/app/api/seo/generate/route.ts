@@ -5,8 +5,6 @@ import Anthropic from '@anthropic-ai/sdk'
 // Vercel: 最大60秒まで許容
 export const maxDuration = 60
 
-const anthropic = new Anthropic()
-
 /**
  * POST /api/seo/generate
  *
@@ -51,6 +49,7 @@ export async function POST(req: NextRequest) {
 
   // ---- ② AI生成（Claude API呼び出し: ここのみ） ----
 
+  const anthropic = new Anthropic()
   const prompt = `
 行政書士事務所（${site.firmName} / ${site.prefecture}）のSEOページを生成してください。
 キーワード: ${keyword}

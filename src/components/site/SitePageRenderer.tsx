@@ -89,6 +89,53 @@ export function SitePageRenderer({ firmName, prefecture, content, siteSlug, isPr
         </div>
       </section>
 
+      {/* お客様の声（ユーザー提供がある場合のみ表示） */}
+      {content.testimonials && content.testimonials.length > 0 && (
+        <section className="py-20 bg-gray-50 overflow-hidden">
+          <div className="max-w-5xl mx-auto px-6 mb-10">
+            <h2 className="text-3xl font-bold text-center">お客様の声</h2>
+          </div>
+
+          {content.testimonials.length >= 4 ? (
+            /* 4件以上: 横スクロールカルーセル */
+            <div className="relative overflow-hidden">
+              <div
+                className="testimonial-track flex gap-6"
+                style={{ width: 'max-content' }}
+              >
+                {[...content.testimonials, ...content.testimonials].map((t, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl p-6 shadow-sm w-72 shrink-0"
+                  >
+                    <p className="text-gray-700 text-sm leading-relaxed mb-4">「{t.content}」</p>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                      <p className="text-xs text-gray-400">{t.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* 3件以下: グリッド表示 */
+            <div className="max-w-5xl mx-auto px-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {content.testimonials.map((t, i) => (
+                  <div key={i} className="bg-white rounded-2xl p-6 shadow-sm">
+                    <p className="text-gray-700 text-sm leading-relaxed mb-4">「{t.content}」</p>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                      <p className="text-xs text-gray-400">{t.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* FAQ */}
       <section className="py-20 px-6 bg-gray-50">
         <div className="max-w-2xl mx-auto">

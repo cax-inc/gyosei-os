@@ -46,14 +46,17 @@ export async function POST(req: NextRequest) {
   }
 
   const validInput: GenerateInput = {
-    firmName:      input.firmName.trim(),
-    ownerName:     input.ownerName.trim(),
-    ownerBio:      input.ownerBio?.trim() || undefined,
-    prefecture:    input.prefecture,
-    services:      input.services,
-    strengths:     input.strengths.trim(),
-    targetClients: input.targetClients?.trim() || undefined,
-    styles:        input.styles ?? [],
+    firmName:         input.firmName.trim(),
+    ownerName:        input.ownerName.trim(),
+    ownerBio:         input.ownerBio?.trim() || undefined,
+    prefecture:       input.prefecture,
+    services:         input.services,
+    strengths:        input.strengths.trim(),
+    targetClients:    input.targetClients?.trim() || undefined,
+    styles:           input.styles ?? [],
+    userTestimonials: (input.userTestimonials ?? []).filter(
+      (t) => t.name?.trim() && t.content?.trim()
+    ),
   }
 
   // ---- ① キャッシュチェック（同一入力の重複AI呼び出しを防ぐ） ----
@@ -106,6 +109,17 @@ export async function POST(req: NextRequest) {
       { error: 'AI生成に失敗しました。しばらく待ってから再試行してください。' },
       { status: 500 }
     )
+  }
+
+  // ユーザー提供のお客様の声で上書き（AIの偽の声は使わない）
+  if (validInput.userTestimonials && validInput.userTestimonials.length > 0) {
+    siteContent.testimonials = validInput.userTestimonials.map((t) => ({
+      name: t.name,
+      role: 'お客様',
+      content: t.content,
+    }))
+  } else {
+    siteContent.testimonials = []
   }
 
   // ---- ④ DB保存（以降の表示はここから読む） ----

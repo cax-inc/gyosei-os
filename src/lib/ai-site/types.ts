@@ -2,6 +2,11 @@
 // AI集客OS 型定義
 // ============================================================
 
+export interface UserTestimonial {
+  name: string
+  content: string
+}
+
 export interface GenerateInput {
   firmName: string
   prefecture: string
@@ -13,6 +18,8 @@ export interface GenerateInput {
   ownerName: string
   /** 代表者経歴（任意: 入力された場合サイトに掲載） */
   ownerBio?: string
+  /** お客様の声（任意・最大5件: 入力された場合のみサイトに掲載） */
+  userTestimonials?: UserTestimonial[]
 }
 
 export interface HeroContent {

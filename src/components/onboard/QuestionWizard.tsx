@@ -5,17 +5,17 @@ import { useRouter } from 'next/navigation'
 import { AiAvatar } from './AiAvatar'
 import { GeneratingProgress } from './GeneratingProgress'
 import { ALL_PREFECTURES, SERVICE_OPTIONS, STYLE_OPTIONS } from '@/lib/ai-site/types'
-import type { GenerateInput } from '@/lib/ai-site/types'
+import type { GenerateInput, UserTestimonial } from '@/lib/ai-site/types'
 
 // ---- ステップ定義 ----
 
-type StepId = 'firmName' | 'ownerName' | 'ownerBio' | 'services' | 'prefecture' | 'strengths' | 'targetClients' | 'styles'
+type StepId = 'firmName' | 'ownerName' | 'ownerBio' | 'services' | 'prefecture' | 'strengths' | 'targetClients' | 'styles' | 'userTestimonials'
 
 interface Step {
   id: StepId
   question: string
   subtext?: string
-  type: 'text' | 'checkbox' | 'select' | 'textarea'
+  type: 'text' | 'checkbox' | 'select' | 'textarea' | 'testimonials'
   options?: string[]
   placeholder?: string
   maxLength?: number
@@ -84,6 +84,13 @@ const STEPS: Step[] = [
     options: STYLE_OPTIONS,
     required: false,
   },
+  {
+    id: 'userTestimonials',
+    question: 'お客様の声を登録しますか？（任意）',
+    subtext: '実際のお客様から許可をいただいた声のみ掲載してください。最大5件まで登録できます。',
+    type: 'testimonials',
+    required: false,
+  },
 ]
 
 // ---- 初期値 ----
@@ -97,9 +104,85 @@ const INITIAL_ANSWERS: GenerateInput = {
   strengths: '',
   targetClients: '',
   styles: [],
+  userTestimonials: [],
 }
 
-// ---- コンポーネント ----
+// ---- お客様の声入力コンポーネント ----
+
+function TestimonialsInput({
+  value,
+  onChange,
+}: {
+  value: UserTestimonial[]
+  onChange: (v: UserTestimonial[]) => void
+}) {
+  const addItem = () => {
+    if (value.length >= 5) return
+    onChange([...value, { name: '', content: '' }])
+  }
+
+  const updateItem = (i: number, field: keyof UserTestimonial, text: string) => {
+    const next = value.map((item, idx) =>
+      idx === i ? { ...item, [field]: text } : item
+    )
+    onChange(next)
+  }
+
+  const removeItem = (i: number) => {
+    onChange(value.filter((_, idx) => idx !== i))
+  }
+
+  return (
+    <div className="space-y-4">
+      {value.length === 0 && (
+        <p className="text-sm text-gray-400 text-center py-4">
+          お客様の声はまだ登録されていません
+        </p>
+      )}
+
+      {value.map((item, i) => (
+        <div key={i} className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-gray-500">お客様の声 {i + 1}</span>
+            <button
+              onClick={() => removeItem(i)}
+              className="text-xs text-red-400 hover:text-red-600 transition-colors"
+            >
+              削除
+            </button>
+          </div>
+          <input
+            type="text"
+            value={item.name}
+            onChange={(e) => updateItem(i, 'name', e.target.value)}
+            placeholder="お名前（例：A様・匿名可）"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <textarea
+            value={item.content}
+            onChange={(e) => updateItem(i, 'content', e.target.value)}
+            placeholder="お客様のコメント（例：スムーズに対応していただき、無事に許可が下りました。）"
+            rows={3}
+            maxLength={200}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          />
+          <p className="text-right text-xs text-gray-400">{item.content.length} / 200</p>
+        </div>
+      ))}
+
+      {value.length < 5 && (
+        <button
+          onClick={addItem}
+          className="w-full border-2 border-dashed border-gray-300 rounded-xl py-3 text-sm text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors"
+        >
+          + お客様の声を追加（{value.length}/5）
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ---- メインコンポーネント ----
 
 export function QuestionWizard() {
   const router = useRouter()
@@ -330,7 +413,19 @@ export function QuestionWizard() {
                 })}
               </div>
             )}
+
+            {currentStep.type === 'testimonials' && (
+              <TestimonialsInput
+                value={(answers.userTestimonials ?? []) as UserTestimonial[]}
+                onChange={(v) => setAnswers((prev) => ({ ...prev, userTestimonials: v }))}
+              />
+            )}
           </div>
+
+          {/* 全質問共通の注意書き */}
+          <p className="text-xs text-gray-300 mt-5 text-center leading-relaxed">
+            ※ 回答内容はあとからでも追加・編集できます
+          </p>
 
           {/* エラー */}
           {error && (
@@ -340,7 +435,7 @@ export function QuestionWizard() {
           )}
 
           {/* ナビゲーションボタン */}
-          <div className="flex gap-3 mt-8">
+          <div className="flex gap-3 mt-6">
             {stepIndex > 0 && (
               <button
                 onClick={handleBack}

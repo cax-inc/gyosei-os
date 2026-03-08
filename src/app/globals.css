@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* お客様の声カルーセル */
+@keyframes testimonial-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.testimonial-track {
+  animation: testimonial-scroll 30s linear infinite;
+}
+.testimonial-track:hover {
+  animation-play-state: paused;
+}

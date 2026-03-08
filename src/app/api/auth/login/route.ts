@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSessionToken, setSessionCookie } from '@/lib/session'
+import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,7 +9,6 @@ export async function POST(req: NextRequest) {
     const adminPassword = process.env.ADMIN_PASSWORD ?? ''
     const authSecret = process.env.AUTH_SECRET ?? ''
 
-    // 環境変数チェック（ログで原因を特定しやすくする）
     if (!adminEmail) {
       console.error('[login] ADMIN_EMAIL is not set')
       return NextResponse.json({ error: 'ADMIN_EMAIL not configured' }, { status: 500 })
@@ -24,12 +23,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (email !== adminEmail || password !== adminPassword) {
-      console.log('[login] Invalid credentials for:', email)
       return NextResponse.json({ error: 'メールアドレスまたはパスワードが正しくありません' }, { status: 401 })
     }
 
-    const token = createSessionToken(email)
-    const { name, value, options } = setSessionCookie(token)
+    const token = await createSessionToken(email)
+    const { name, value, options } = sessionCookieOptions(token)
 
     const res = NextResponse.json({ success: true })
     res.cookies.set(name, value, options)

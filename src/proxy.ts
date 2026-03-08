@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifySessionToken } from '@/lib/session'
 
-export default function proxy(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const token = req.cookies.get('session')?.value
-  const session = token ? verifySessionToken(token) : null
+  const session = token ? await verifySessionToken(token) : null
 
   if (!session) {
     const loginUrl = new URL('/login', req.url)

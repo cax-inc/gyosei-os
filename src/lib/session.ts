@@ -1,38 +1,64 @@
-import { createHmac } from 'crypto'
-import { cookies } from 'next/headers'
+// Web Crypto API を使用（Edge Runtime・Node.js 両対応）
 
 const COOKIE_NAME = 'session'
 const MAX_AGE = 60 * 60 * 24 * 7 // 7日
 
-function getSecret(): string {
+function getSecretBytes(): ArrayBuffer {
   const secret = process.env.AUTH_SECRET
   if (!secret) throw new Error('AUTH_SECRET is not set')
-  return secret
+  const encoded = new TextEncoder().encode(secret)
+  return encoded.buffer.slice(0)
 }
 
-function sign(payload: string): string {
-  return createHmac('sha256', getSecret()).update(payload).digest('hex')
+async function getKey(usage: 'sign' | 'verify'): Promise<CryptoKey> {
+  return crypto.subtle.importKey(
+    'raw',
+    getSecretBytes(),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    [usage],
+  )
 }
 
-export function createSessionToken(email: string): string {
+function toBase64Url(bytes: Uint8Array): string {
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+}
+
+function fromBase64Url(str: string): Uint8Array {
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64 + '=='.slice(0, (4 - (base64.length % 4)) % 4)
+  const bin = atob(padded)
+  const bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  return bytes
+}
+
+export async function createSessionToken(email: string): Promise<string> {
   const payload = JSON.stringify({ email, exp: Date.now() + MAX_AGE * 1000 })
-  const encoded = Buffer.from(payload).toString('base64url')
-  const sig = sign(encoded)
-  return `${encoded}.${sig}`
+  const encoded = toBase64Url(new TextEncoder().encode(payload))
+  const key = await getKey('sign')
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(encoded) as unknown as ArrayBuffer)
+  return `${encoded}.${toBase64Url(new Uint8Array(sig))}`
 }
 
-export function verifySessionToken(token: string): { email: string } | null {
+export async function verifySessionToken(token: string): Promise<{ email: string } | null> {
   try {
     const [encoded, sig] = token.split('.')
     if (!encoded || !sig) return null
-    if (sign(encoded) !== sig) return null
-
-    const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString()) as {
-      email: string
-      exp: number
-    }
+    const key = await getKey('verify')
+    const valid = await crypto.subtle.verify(
+      'HMAC',
+      key,
+      fromBase64Url(sig) as unknown as ArrayBuffer,
+      new TextEncoder().encode(encoded) as unknown as ArrayBuffer,
+    )
+    if (!valid) return null
+    const payload = JSON.parse(
+      new TextDecoder().decode(fromBase64Url(encoded)),
+    ) as { email: string; exp: number }
     if (Date.now() > payload.exp) return null
-
     return { email: payload.email }
   } catch {
     return null
@@ -40,16 +66,17 @@ export function verifySessionToken(token: string): { email: string } | null {
 }
 
 export async function getSession(): Promise<{ email: string } | null> {
+  const { cookies } = await import('next/headers')
   const cookieStore = await cookies()
   const token = cookieStore.get(COOKIE_NAME)?.value
   if (!token) return null
   return verifySessionToken(token)
 }
 
-export function setSessionCookie(token: string): { name: string; value: string; options: object } {
+export function sessionCookieOptions(value: string) {
   return {
     name: COOKIE_NAME,
-    value: token,
+    value,
     options: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

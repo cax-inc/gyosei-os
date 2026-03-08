@@ -20,6 +20,8 @@ export interface GenerateInput {
   ownerBio?: string
   /** お客様の声（任意・最大5件: 入力された場合のみサイトに掲載） */
   userTestimonials?: UserTestimonial[]
+  /** 問い合わせ通知先メール（必須: 問い合わせが来たときに届く） */
+  ownerEmail: string
 }
 
 export interface HeroContent {

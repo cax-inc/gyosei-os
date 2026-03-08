@@ -9,7 +9,7 @@ import type { GenerateInput, UserTestimonial } from '@/lib/ai-site/types'
 
 // ---- ステップ定義 ----
 
-type StepId = 'firmName' | 'ownerName' | 'ownerBio' | 'services' | 'prefecture' | 'strengths' | 'targetClients' | 'styles' | 'userTestimonials'
+type StepId = 'firmName' | 'ownerName' | 'ownerEmail' | 'ownerBio' | 'services' | 'prefecture' | 'strengths' | 'targetClients' | 'styles' | 'userTestimonials'
 
 interface Step {
   id: StepId
@@ -36,6 +36,14 @@ const STEPS: Step[] = [
     subtext: 'サイトの事務所紹介に掲載されます',
     type: 'text',
     placeholder: '例：山田 太郎',
+    required: true,
+  },
+  {
+    id: 'ownerEmail',
+    question: '問い合わせ通知を受け取るメールアドレスを教えてください',
+    subtext: 'フォームから問い合わせが届いたとき、このアドレスに通知が送られます。',
+    type: 'text',
+    placeholder: '例：info@yamada-gyosei.jp',
     required: true,
   },
   {
@@ -98,6 +106,7 @@ const STEPS: Step[] = [
 const INITIAL_ANSWERS: GenerateInput = {
   firmName: '',
   ownerName: '',
+  ownerEmail: '',
   ownerBio: '',
   services: [],
   prefecture: '',

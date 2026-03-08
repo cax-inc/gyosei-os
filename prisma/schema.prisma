@@ -93,6 +93,7 @@ model AiSite {
   editorOverlay Json     @default("[]")
   // draft | published | paused
   status        String   @default("draft") @db.VarChar(20)
+  ownerEmail    String?  @db.VarChar(255)
   autoReply     Boolean  @default(true)
   // ⚠️ AIコスト制御: 同一入力の重複生成を防ぐためのSHA-256ハッシュ
   // 計算対象: firmName + prefecture + services + strengths + targetClients + styles

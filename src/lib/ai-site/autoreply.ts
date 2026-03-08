@@ -45,6 +45,40 @@ ${input.services.join('、')}
   return message.content[0].type === 'text' ? message.content[0].text.trim() : ''
 }
 
+/** オーナーへの問い合わせ通知メールを送信する */
+export async function sendLeadNotificationEmail({
+  ownerEmail,
+  firmName,
+  lead,
+}: {
+  ownerEmail: string
+  firmName: string
+  lead: { name?: string | null; email?: string | null; phone?: string | null; message?: string | null }
+}): Promise<void> {
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const fromAddress = process.env.RESEND_FROM ?? process.env.RESEND_FROM_EMAIL ?? 'noreply@example.com'
+
+  const body = [
+    `【${firmName}】に新しい問い合わせが届きました。`,
+    '',
+    `お名前: ${lead.name ?? '未記入'}`,
+    `メール: ${lead.email ?? '未記入'}`,
+    `電話番号: ${lead.phone ?? '未記入'}`,
+    `相談内容:\n${lead.message ?? '（内容なし）'}`,
+  ].join('\n')
+
+  const { error } = await resend.emails.send({
+    from: `AI集客OS <${fromAddress}>`,
+    to: ownerEmail,
+    subject: `【新規問い合わせ】${firmName}`,
+    text: body,
+  })
+
+  if (error) {
+    console.error('[LeadNotify] 通知メール送信エラー:', error)
+  }
+}
+
 /** 自動返信メールを送信する */
 export async function sendAutoReplyEmail({
   to,

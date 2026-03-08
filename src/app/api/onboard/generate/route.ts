@@ -44,10 +44,14 @@ export async function POST(req: NextRequest) {
   if (!input.ownerName?.trim()) {
     return NextResponse.json({ error: '代表者名は必須です' }, { status: 400 })
   }
+  if (!input.ownerEmail?.trim()) {
+    return NextResponse.json({ error: '通知先メールアドレスは必須です' }, { status: 400 })
+  }
 
   const validInput: GenerateInput = {
     firmName:         input.firmName.trim(),
     ownerName:        input.ownerName.trim(),
+    ownerEmail:       input.ownerEmail!.trim(),
     ownerBio:         input.ownerBio?.trim() || undefined,
     prefecture:       input.prefecture,
     services:         input.services,
@@ -130,6 +134,7 @@ export async function POST(req: NextRequest) {
       data: {
         slug,
         firmName:      validInput.firmName,
+        ownerEmail:    validInput.ownerEmail,
         prefecture:    validInput.prefecture,
         services:      validInput.services,
         strengths:     validInput.strengths,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { generateAutoReply, sendAutoReplyEmail } from '@/lib/ai-site/autoreply'
+import { generateAutoReply, sendAutoReplyEmail, sendLeadNotificationEmail } from '@/lib/ai-site/autoreply'
 
 interface Params {
   params: Promise<{ slug: string }>
@@ -53,6 +53,15 @@ export async function POST(req: NextRequest, { params }: Params) {
       status:      'new',
     },
   })
+
+  // ── オーナーへの通知メール ─────────────────────────────────
+  if (site.ownerEmail) {
+    void sendLeadNotificationEmail({
+      ownerEmail: site.ownerEmail,
+      firmName: site.firmName,
+      lead: { name, email, phone, message },
+    }).catch(err => console.error('[LeadNotify] 通知失敗:', err))
+  }
 
   // ── AIコスト制御 ───────────────────────────────────────────
   // 自動返信AIは「新規リード作成時のみ」呼び出す。

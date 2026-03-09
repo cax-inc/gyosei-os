@@ -21,13 +21,9 @@ export function middleware(request: NextRequest) {
   // admin.coreai-x.com → /admin/* へのアクセスを保護
   // （ルートにアクセスした場合は /admin にリダイレクト）
   if (subdomain === 'admin') {
-    if (pathname === '/') {
-      url.pathname = '/admin'
-      return NextResponse.redirect(url)
-    }
-    // /admin/* 以外のパスが来た場合は /admin/* に書き換え
+    // /admin/* 以外のパスは /admin/* に書き換え（/ も含む）
     if (!pathname.startsWith('/admin')) {
-      url.pathname = '/admin' + pathname
+      url.pathname = '/admin' + (pathname === '/' ? '' : pathname)
       return NextResponse.rewrite(url)
     }
     return NextResponse.next()

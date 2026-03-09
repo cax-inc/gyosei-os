@@ -96,6 +96,124 @@ function ProModal({ onClose }: { onClose: () => void }) {
   )
 }
 
+// ── 登録モーダル ───────────────────────────────────────────────────────────────
+
+function RegisterModal({ slug, onClose }: { slug: string; onClose: () => void }) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    const res = await fetch('/api/onboard/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug, name, email }),
+    })
+
+    if (res.ok) {
+      const appUrl = process.env.NODE_ENV === 'production'
+        ? 'https://app.coreai-x.com'
+        : 'http://localhost:3000'
+      window.location.href = `${appUrl}/sites`
+    } else {
+      const data = await res.json() as { error?: string }
+      setError(data.error ?? 'エラーが発生しました')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: '#fff', borderRadius: 24, padding: '40px 36px', maxWidth: 440, width: '100%',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.2)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginBottom: 8, letterSpacing: '-0.5px' }}>
+          このサイトをあなたのものにする
+        </h2>
+        <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 28 }}>
+          お名前とメールアドレスを登録すると、サイトが公開され、いつでも編集・管理できるようになります。
+        </p>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+              お名前
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              autoFocus
+              placeholder="山田 太郎"
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 8,
+                border: '1px solid #d1d5db', fontSize: 14, outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+              メールアドレス
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="your@email.com"
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 8,
+                border: '1px solid #d1d5db', fontSize: 14, outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          {error && (
+            <p style={{ fontSize: 13, color: '#dc2626', background: '#fef2f2', padding: '10px 14px', borderRadius: 8 }}>
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%', padding: '14px', borderRadius: 10, border: 'none',
+              background: loading ? '#9ca3af' : '#6366f1',
+              color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
+              marginTop: 4,
+            }}
+          >
+            {loading ? '公開中...' : '保存してサイトを公開する →'}
+          </button>
+          <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center' }}>
+            パスワード不要。次回からメールアドレスだけでログインできます。
+          </p>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 // ── PreviewClient ──────────────────────────────────────────────────────────────
 
 interface Props {
@@ -112,6 +230,7 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
   const [publishing, setPublishing] = useState(false)
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [showProModal, setShowProModal] = useState(false)
+  const [showRegisterModal, setShowRegisterModal] = useState(false)
   const [showToast, setShowToast] = useState(true)
   const [resetting, setResetting] = useState(false)
 
@@ -235,17 +354,14 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
 
           {/* 公開ボタン */}
           <button
-            onClick={handlePublish}
-            disabled={publishing}
+            onClick={() => setShowRegisterModal(true)}
             style={{
               background: '#6366f1', color: '#fff', fontWeight: 700,
               fontSize: 13, padding: '7px 18px', borderRadius: 8, border: 'none',
-              cursor: publishing ? 'not-allowed' : 'pointer',
-              opacity: publishing ? 0.7 : 1,
-              letterSpacing: '-0.2px',
+              cursor: 'pointer', letterSpacing: '-0.2px',
             }}
           >
-            {publishing ? '公開中…' : 'サイトを公開する →'}
+            サイトを公開する →
           </button>
         </div>
       </div>
@@ -264,6 +380,9 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
 
       {/* ── Proモーダル ── */}
       {showProModal && <ProModal onClose={() => setShowProModal(false)} />}
+
+      {/* ── 登録モーダル ── */}
+      {showRegisterModal && <RegisterModal slug={slug} onClose={() => setShowRegisterModal(false)} />}
 
       {/* ── 生成完了トースト ── */}
       {showToast && (

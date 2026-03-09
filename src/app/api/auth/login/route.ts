@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'メールアドレスまたはパスワードが正しくありません' }, { status: 401 })
     }
 
-    const token = await createSessionToken(email)
+    const token = await createSessionToken(email, 'admin')
     const { name, value, options } = sessionCookieOptions(token)
 
     const res = NextResponse.json({ success: true })

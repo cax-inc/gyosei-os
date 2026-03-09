@@ -54,6 +54,21 @@ model Client {
 }
 
 // ============================================================
+// AI集客OS: magic_tokens（マジックリンク認証）
+// ============================================================
+model MagicToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String    @db.VarChar(255)
+  token     String    @unique @db.VarChar(64)
+  expiresAt DateTime  @db.Timestamptz(6)
+  usedAt    DateTime? @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@index([token])
+  @@map("magic_tokens")
+}
+
+// ============================================================
 // マーケOS: sites（Webサイト）
 // 1クライアントが複数のサイト（TOP / LP など）を持つ
 // ============================================================

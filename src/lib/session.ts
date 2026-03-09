@@ -35,15 +35,15 @@ function fromBase64Url(str: string): Uint8Array {
   return bytes
 }
 
-export async function createSessionToken(email: string): Promise<string> {
-  const payload = JSON.stringify({ email, exp: Date.now() + MAX_AGE * 1000 })
+export async function createSessionToken(email: string, role: 'admin' | 'user' = 'admin'): Promise<string> {
+  const payload = JSON.stringify({ email, role, exp: Date.now() + MAX_AGE * 1000 })
   const encoded = toBase64Url(new TextEncoder().encode(payload))
   const key = await getKey('sign')
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(encoded) as unknown as ArrayBuffer)
   return `${encoded}.${toBase64Url(new Uint8Array(sig))}`
 }
 
-export async function verifySessionToken(token: string): Promise<{ email: string } | null> {
+export async function verifySessionToken(token: string): Promise<{ email: string; role: 'admin' | 'user' } | null> {
   try {
     const [encoded, sig] = token.split('.')
     if (!encoded || !sig) return null
@@ -57,15 +57,15 @@ export async function verifySessionToken(token: string): Promise<{ email: string
     if (!valid) return null
     const payload = JSON.parse(
       new TextDecoder().decode(fromBase64Url(encoded)),
-    ) as { email: string; exp: number }
+    ) as { email: string; role?: 'admin' | 'user'; exp: number }
     if (Date.now() > payload.exp) return null
-    return { email: payload.email }
+    return { email: payload.email, role: payload.role ?? 'admin' }
   } catch {
     return null
   }
 }
 
-export async function getSession(): Promise<{ email: string } | null> {
+export async function getSession(): Promise<{ email: string; role: 'admin' | 'user' } | null> {
   const { cookies } = await import('next/headers')
   const cookieStore = await cookies()
   const token = cookieStore.get(COOKIE_NAME)?.value

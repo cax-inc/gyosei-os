@@ -3,9 +3,14 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { siteUrl } from '@/lib/urls'
+import { getSession } from '@/lib/session'
 
 export default async function SitesPage() {
+  const session = await getSession()
+  const userEmail = session?.email
+
   const sites = await prisma.aiSite.findMany({
+    where: userEmail ? { ownerEmail: userEmail } : undefined,
     orderBy: { createdAt: 'desc' },
     select: {
       slug: true,

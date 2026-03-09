@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { verifySessionToken } from '@/lib/session'
 
 const ROOT_DOMAIN = 'coreai-x.com'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
   const url = request.nextUrl.clone()
   const pathname = url.pathname
@@ -13,15 +14,27 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // サブドメインを取得（例: "tokyo-law" or "app" or "admin" or ""）
+  // セッション取得
+  const sessionToken = request.cookies.get('session')?.value
+  const session = sessionToken ? await verifySessionToken(sessionToken) : null
+
+  // サブドメインを取得
   const subdomain = hostname.endsWith(`.${ROOT_DOMAIN}`)
     ? hostname.slice(0, -(ROOT_DOMAIN.length + 1))
     : null
 
-  // admin.coreai-x.com → /admin/* へのアクセスを保護
-  // （ルートにアクセスした場合は /admin にリダイレクト）
+  // admin.coreai-x.com
   if (subdomain === 'admin') {
-    // /admin/* 以外のパスは /admin/* に書き換え（/ も含む）
+    // ログインページは認証不要
+    if (pathname === '/admin/login') {
+      return NextResponse.next()
+    }
+    // 未認証またはadminロールでない → ログインへ
+    if (!session || session.role !== 'admin') {
+      url.pathname = '/admin/login'
+      return NextResponse.redirect(url)
+    }
+    // /admin/* に書き換え
     if (!pathname.startsWith('/admin')) {
       url.pathname = '/admin' + (pathname === '/' ? '' : pathname)
       return NextResponse.rewrite(url)
@@ -29,34 +42,48 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // app.coreai-x.com → ユーザー管理画面（既存パスをそのまま使用）
+  // app.coreai-x.com
   if (subdomain === 'app') {
-    if (pathname === '/') {
+    const isPublicPath =
+      pathname.startsWith('/login') ||
+      pathname.startsWith('/onboard') ||
+      pathname.startsWith('/api/')
+
+    // 認証済みでloginページ → /sitesへ
+    if (session && pathname.startsWith('/login')) {
       url.pathname = '/sites'
       return NextResponse.redirect(url)
     }
+
+    // 未認証でprotectedページ → /loginへ
+    if (!session && !isPublicPath) {
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    // ルート → /sites or /login
+    if (pathname === '/') {
+      url.pathname = session ? '/sites' : '/login'
+      return NextResponse.redirect(url)
+    }
+
     return NextResponse.next()
   }
 
-  // {slug}.coreai-x.com → /{slug} の公開サイトに書き換え
+  // {slug}.coreai-x.com → 公開サイト
   if (subdomain && subdomain !== 'www') {
-    // ルートへのアクセスをスラグのページに書き換え
     if (pathname === '/') {
       url.pathname = `/${subdomain}`
       return NextResponse.rewrite(url)
     }
-    // その他のパスは /slug/path に書き換え（必要に応じて拡張）
     url.pathname = `/${subdomain}${pathname}`
     return NextResponse.rewrite(url)
   }
 
-  // coreai-x.com → LP（そのまま）
+  // coreai-x.com → LP
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: [
-    // API・静的ファイルを除く全パス
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)', '/api/(.*)'],
 }

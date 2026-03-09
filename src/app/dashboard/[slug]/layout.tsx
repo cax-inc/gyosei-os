@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { LogoutButton } from '@/components/dashboard/LogoutButton'
+import { siteUrl } from '@/lib/urls'
 
 const NAV = [
   { href: '',       label: 'ダッシュボード', icon: '📊' },
@@ -60,7 +61,7 @@ export default async function DashboardLayout({ children, params }: Props) {
         {/* フッター */}
         <div className="px-5 py-4 border-t border-gray-200 space-y-2">
           <Link
-            href={`/${slug}`}
+            href={siteUrl(slug)}
             target="_blank"
             className="block text-xs text-blue-600 hover:underline"
           >

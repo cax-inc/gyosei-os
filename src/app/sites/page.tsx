@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { siteUrl } from '@/lib/urls'
 
 export default async function SitesPage() {
   const sites = await prisma.aiSite.findMany({
@@ -68,7 +69,7 @@ export default async function SitesPage() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <Link
-                    href={`/${site.slug}`}
+                    href={siteUrl(site.slug)}
                     target="_blank"
                     className="text-sm text-blue-600 hover:underline"
                   >

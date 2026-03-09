@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { SiteTemplate } from '@/components/editor/SiteTemplate'
 import type { SiteContent } from '@/lib/ai-site/types'
+import { siteUrl } from '@/lib/urls'
 
 // ── Pro アップセルモーダル ─────────────────────────────────────────────────────
 
@@ -150,7 +151,7 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
     try {
       const res = await fetch(`/api/dashboard/${slug}/publish`, { method: 'POST' })
       if (res.ok) {
-        router.push(`/${slug}`)
+        window.location.href = siteUrl(slug)
       } else {
         alert('公開に失敗しました。もう一度お試しください。')
       }

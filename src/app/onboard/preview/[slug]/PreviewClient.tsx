@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useCallback, useEffect } from 'react'
 import { SiteTemplate } from '@/components/editor/SiteTemplate'
 import type { SiteContent } from '@/lib/ai-site/types'
-import { siteUrl } from '@/lib/urls'
 
 // ── Pro アップセルモーダル ─────────────────────────────────────────────────────
 
@@ -214,6 +212,70 @@ function RegisterModal({ slug, onClose }: { slug: string; onClose: () => void })
   )
 }
 
+// ── 使い方ガイドオーバーレイ ──────────────────────────────────────────────────
+
+function UsageGuide({ onClose }: { onClose: () => void }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 300,
+      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+      animation: 'fadeIn 0.3s ease',
+    }}>
+      <div style={{
+        background: '#fff', borderRadius: 24,
+        width: '75vw', maxWidth: 680, maxHeight: '80vh',
+        padding: '48px 56px', textAlign: 'center',
+        boxShadow: '0 32px 100px rgba(0,0,0,0.4)',
+        animation: 'slideUp 0.35s ease',
+        overflow: 'auto',
+      }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>✨</div>
+        <h2 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-1px', color: '#111827', marginBottom: 8 }}>
+          サイトが完成しました！
+        </h2>
+        <p style={{ fontSize: 15, color: '#6b7280', marginBottom: 48, lineHeight: 1.6 }}>
+          すべてのテキストは直接クリックして編集できます。<br />
+          以下の機能をご活用ください。
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, marginBottom: 48 }}>
+          {[
+            { icon: '✏️', title: 'テキスト編集', desc: '各テキストをクリックするとそのまま編集できます' },
+            { icon: '🗑️', title: '項目の削除', desc: '各カードの右上の ✕ ボタンで項目を削除できます' },
+            { icon: '📷', title: '写真を追加', desc: '「事務所紹介」の写真エリアをクリックして写真をアップロードできます' },
+          ].map(item => (
+            <div key={item.title} style={{
+              background: '#f9fafb', borderRadius: 16, padding: '28px 20px',
+              border: '1px solid #e5e7eb',
+            }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>{item.icon}</div>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#111827', marginBottom: 8 }}>{item.title}</h3>
+              <p style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>{item.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{
+            background: '#6366f1', color: '#fff', fontWeight: 700,
+            fontSize: 16, padding: '14px 40px', borderRadius: 100, border: 'none',
+            cursor: 'pointer', letterSpacing: '-0.3px',
+            boxShadow: '0 4px 20px rgba(99,102,241,0.35)',
+          }}
+        >
+          編集を始める →
+        </button>
+      </div>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
+      `}</style>
+    </div>
+  )
+}
+
 // ── PreviewClient ──────────────────────────────────────────────────────────────
 
 interface Props {
@@ -224,15 +286,23 @@ interface Props {
 }
 
 export function PreviewClient({ slug, firmName, prefecture, initialContent }: Props) {
-  const router = useRouter()
   const [content, setContent] = useState<SiteContent>(initialContent)
   const [saving, setSaving] = useState(false)
-  const [publishing, setPublishing] = useState(false)
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [showProModal, setShowProModal] = useState(false)
   const [showRegisterModal, setShowRegisterModal] = useState(false)
   const [showToast, setShowToast] = useState(true)
   const [resetting, setResetting] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
+  const [viewport, setViewport] = useState<'pc' | 'iphone'>('pc')
+
+  useEffect(() => {
+    const key = `guide_shown_${slug}`
+    if (!localStorage.getItem(key)) {
+      setShowGuide(true)
+      localStorage.setItem(key, '1')
+    }
+  }, [slug])
 
   const handleUpdate = useCallback(async (c: SiteContent) => {
     setContent(c)
@@ -265,27 +335,14 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
     finally { setResetting(false) }
   }, [slug, initialContent])
 
-  const handlePublish = useCallback(async () => {
-    setPublishing(true)
-    try {
-      const res = await fetch(`/api/dashboard/${slug}/publish`, { method: 'POST' })
-      if (res.ok) {
-        window.location.href = siteUrl(slug)
-      } else {
-        alert('公開に失敗しました。もう一度お試しください。')
-      }
-    } catch {
-      alert('公開に失敗しました。')
-    } finally {
-      setPublishing(false)
-    }
-  }, [slug, router])
-
   // 保存後2秒だけ「保存しました」表示
   const showSaved = savedAt !== null && Date.now() - savedAt < 2500
 
   return (
     <>
+      {/* ── 使い方ガイド ── */}
+      {showGuide && <UsageGuide onClose={() => setShowGuide(false)} />}
+
       {/* ── 上部バー（固定） ── */}
       <div style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
@@ -332,6 +389,30 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
             {resetting ? '戻しています…' : '↺ リセット'}
           </button>
 
+          {/* ビューポート切替 */}
+          <div style={{ display: 'flex', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, overflow: 'hidden' }}>
+            <button
+              onClick={() => setViewport('pc')}
+              style={{
+                padding: '6px 12px', fontSize: 12, border: 'none', cursor: 'pointer',
+                background: viewport === 'pc' ? 'rgba(255,255,255,0.15)' : 'transparent',
+                color: viewport === 'pc' ? '#fff' : 'rgba(255,255,255,0.4)',
+              }}
+            >
+              💻 PC
+            </button>
+            <button
+              onClick={() => setViewport('iphone')}
+              style={{
+                padding: '6px 12px', fontSize: 12, border: 'none', cursor: 'pointer',
+                background: viewport === 'iphone' ? 'rgba(255,255,255,0.15)' : 'transparent',
+                color: viewport === 'iphone' ? '#fff' : 'rgba(255,255,255,0.4)',
+              }}
+            >
+              📱 スマホ
+            </button>
+          </div>
+
           {/* Pro ボタン */}
           <button
             onClick={() => setShowProModal(true)}
@@ -367,15 +448,23 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
       </div>
 
       {/* ── サイト本体 ── */}
-      <div style={{ paddingTop: 52 }}>
-        <SiteTemplate
-          firmName={firmName}
-          prefecture={prefecture}
-          siteSlug={slug}
-          content={content}
-          editable
-          onUpdate={handleUpdate}
-        />
+      <div style={{ paddingTop: 52, background: viewport === 'iphone' ? '#f3f4f6' : '#fff', minHeight: '100vh' }}>
+        <div style={viewport === 'iphone' ? {
+          maxWidth: 390, margin: '24px auto',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
+          borderRadius: 44,
+          overflow: 'hidden',
+          border: '8px solid #1a1a1a',
+        } : {}}>
+          <SiteTemplate
+            firmName={firmName}
+            prefecture={prefecture}
+            siteSlug={slug}
+            content={content}
+            editable
+            onUpdate={handleUpdate}
+          />
+        </div>
       </div>
 
       {/* ── Proモーダル ── */}

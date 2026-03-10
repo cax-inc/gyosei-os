@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { PREF_TO_SLUG } from './types'
+import { derivePrefecture, buildPrefectureLabel, buildAreaDisplayList } from './areas'
 import type { GenerateInput, SiteContent } from './types'
 
 const SYSTEM_PROMPT = `あなたは行政書士事務所専門のプロコピーライターです。
@@ -13,7 +14,8 @@ export async function generateSiteContent(input: GenerateInput): Promise<SiteCon
   const servicesText = input.services.join('、')
   const stylesText = input.styles.length > 0 ? input.styles.join('、') : '信頼感重視'
 
-  const prefShort = input.prefecture.replace(/[都道府県]$/, '')
+  const prefShort = derivePrefecture(input.serviceAreas).replace(/[都道府県]$/, '')
+  const areaText = input.serviceAreas.includes('全国') ? '全国' : input.serviceAreas.slice(0, 5).join('・')
 
   const prompt = `
 行政書士事務所の集客Webサイトコンテンツを生成してください。
@@ -22,10 +24,9 @@ export async function generateSiteContent(input: GenerateInput): Promise<SiteCon
 事務所名: ${input.firmName}
 代表者名: ${input.ownerName}
 ${input.ownerBio ? `代表者経歴: ${input.ownerBio}` : ''}
-所在地: ${input.prefecture}
+主な対応エリア: ${areaText}
 対応業務: ${servicesText}
 事務所の強み: ${input.strengths}
-ターゲット顧客: ${input.targetClients || '業務を必要とする全ての方'}
 文章スタイル: ${stylesText}
 
 以下のJSON形式で出力してください:
@@ -57,10 +58,6 @@ ${input.ownerBio ? `代表者経歴: ${input.ownerBio}` : ''}
       "features": ["含まれる内容1", "含まれる内容2", "含まれる内容3"]
     }
   ],
-  "area": {
-    "description": "${prefShort}を中心に周辺エリア全域のご相談に対応しています（35字以内）",
-    "areas": ["区/市1", "区/市2", "区/市3", "区/市4", "区/市5", "区/市6"]
-  },
   "testimonials": [
     {
       "name": "A様（匿名）",
@@ -81,7 +78,6 @@ ${input.ownerBio ? `代表者経歴: ${input.ownerBio}` : ''}
 注意:
 - servicesは選択された業務を全て含める（最大8つ）
 - pricingは代表的なサービス3つ（servicesから選ぶ）
-- area.areasは${input.prefecture}の主要な市区町村6〜8個
 - testimonialsは3件生成（匿名）
 - faqは5〜6件生成
 - 全て自然な日本語で書く
@@ -96,16 +92,34 @@ ${input.ownerBio ? `代表者経歴: ${input.ownerBio}` : ''}
 
   const rawText = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
 
-  return parseJsonSafely(rawText)
+  const content = parseJsonSafely(rawText)
+
+  // 対応エリアはユーザー入力から構築
+  const areaList = buildAreaDisplayList(input.serviceAreas)
+  if (areaList.length > 0) {
+    content.area = {
+      description: input.serviceAreas.includes('全国')
+        ? '全国からのご相談に対応しています。オンライン対応も承っています。'
+        : `${prefShort}を中心に周辺エリアのご相談に対応しています。`,
+      areas: areaList,
+    }
+  } else {
+    content.area = undefined
+  }
+
+  content.prefectureLabel = buildPrefectureLabel(input.serviceAreas)
+
+  return content
 }
 
 /** SEOキーワード候補を生成する（サイト生成と同時に呼ぶ） */
 export async function generateSeoKeywords(input: GenerateInput): Promise<string[]> {
   const anthropic = new Anthropic()
-  const prefecture = input.prefecture.replace(/[都道府県]$/, '')
+  const derivedPref = derivePrefecture(input.serviceAreas)
+  const prefecture = derivedPref.replace(/[都道府県]$/, '')
 
   const prompt = `
-行政書士事務所（${input.prefecture}）のSEOページ用キーワードを10個生成してください。
+行政書士事務所（${derivedPref}）のSEOページ用キーワードを10個生成してください。
 対応業務: ${input.services.join('、')}
 
 形式:「業務名 ${prefecture}」「業務名 地域名」のように「サービス × 地域」の組み合わせにしてください。

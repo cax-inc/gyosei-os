@@ -9,10 +9,10 @@ export interface UserTestimonial {
 
 export interface GenerateInput {
   firmName: string
-  prefecture: string
   services: string[]
   strengths: string
-  targetClients?: string
+  /** 対応エリア（必須: エリア選択画面で選択した値の配列） */
+  serviceAreas: string[]
   styles: string[]
   /** 代表者名（必須） */
   ownerName: string
@@ -83,6 +83,10 @@ export interface SiteContent {
   testimonials?: TestimonialItem[]
   faq: FAQItem[]
   cta: CTAContent
+  /** 都道府県バッジのテキスト（例: 埼玉県の行政書士）。編集可能 */
+  prefectureLabel?: string
+  /** 料金セクションのCTAテキスト（例: 無料相談はこちら →）。編集可能 */
+  pricingCtaText?: string
 }
 
 export interface GenerateResult {

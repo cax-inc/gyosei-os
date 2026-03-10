@@ -19,10 +19,9 @@ export function buildSitePromptHash(input: GenerateInput): string {
     firmName:     input.firmName.trim(),
     ownerName:    input.ownerName.trim(),
     ownerBio:     (input.ownerBio ?? '').trim(),
-    prefecture:   input.prefecture,
+    serviceAreas: [...input.serviceAreas].sort().join(','),
     services:     [...input.services].sort(),
     strengths:    input.strengths.trim(),
-    targetClients: (input.targetClients ?? '').trim(),
     styles:       [...input.styles].sort(),
   })
 

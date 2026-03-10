@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateSiteContent, generateSeoKeywords, buildSlug } from '@/lib/ai-site/generator'
 import { buildSitePromptHash } from '@/lib/ai-site/hash'
+import { derivePrefecture } from '@/lib/ai-site/areas'
 import type { GenerateInput } from '@/lib/ai-site/types'
 
 // Vercel: 最大60秒まで許容（長時間のAI生成のため）
@@ -31,8 +32,8 @@ export async function POST(req: NextRequest) {
   if (!input.firmName?.trim()) {
     return NextResponse.json({ error: '事務所名は必須です' }, { status: 400 })
   }
-  if (!input.prefecture) {
-    return NextResponse.json({ error: '所在地は必須です' }, { status: 400 })
+  if (!input.serviceAreas || !Array.isArray(input.serviceAreas) || input.serviceAreas.length === 0) {
+    return NextResponse.json({ error: '対応エリアを1つ以上選択してください' }, { status: 400 })
   }
   if (!input.services || input.services.length === 0) {
     return NextResponse.json({ error: '業務を1つ以上選択してください' }, { status: 400 })
@@ -53,10 +54,9 @@ export async function POST(req: NextRequest) {
     ownerName:        input.ownerName.trim(),
     ownerEmail:       input.ownerEmail!.trim(),
     ownerBio:         input.ownerBio?.trim() || undefined,
-    prefecture:       input.prefecture,
     services:         input.services,
+    serviceAreas:     Array.isArray(input.serviceAreas) ? input.serviceAreas : [],
     strengths:        input.strengths.trim(),
-    targetClients:    input.targetClients?.trim() || undefined,
     styles:           input.styles ?? [],
     userTestimonials: (input.userTestimonials ?? []).filter(
       (t) => t.name?.trim() && t.content?.trim()
@@ -80,11 +80,12 @@ export async function POST(req: NextRequest) {
 
   // ---- ② スラッグ生成（衝突回避） ----
 
-  let slug = buildSlug(validInput.prefecture)
+  const prefecture = derivePrefecture(validInput.serviceAreas)
+  let slug = buildSlug(prefecture)
   for (let i = 0; i < 5; i++) {
     const existing = await prisma.aiSite.findUnique({ where: { slug } })
     if (!existing) break
-    slug = buildSlug(validInput.prefecture)
+    slug = buildSlug(prefecture)
   }
 
   // ---- ③ AI生成（Claude API呼び出し: ここのみ） ----
@@ -135,10 +136,9 @@ export async function POST(req: NextRequest) {
         slug,
         firmName:      validInput.firmName,
         ownerEmail:    validInput.ownerEmail,
-        prefecture:    validInput.prefecture,
+        prefecture:    prefecture,
         services:      validInput.services,
         strengths:     validInput.strengths,
-        targetClients: validInput.targetClients ?? null,
         styles:        validInput.styles,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         siteContent:   siteContent as any,

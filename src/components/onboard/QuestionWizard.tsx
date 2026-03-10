@@ -4,18 +4,20 @@ import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { AiAvatar } from './AiAvatar'
 import { GeneratingProgress } from './GeneratingProgress'
-import { ALL_PREFECTURES, SERVICE_OPTIONS, STYLE_OPTIONS } from '@/lib/ai-site/types'
+import { SERVICE_OPTIONS, STYLE_OPTIONS } from '@/lib/ai-site/types'
+import { AREA_REGIONS } from '@/lib/ai-site/areas'
+import type { Region, Prefecture } from '@/lib/ai-site/areas'
 import type { GenerateInput, UserTestimonial } from '@/lib/ai-site/types'
 
 // ---- ステップ定義 ----
 
-type StepId = 'firmName' | 'ownerName' | 'ownerEmail' | 'ownerBio' | 'services' | 'prefecture' | 'strengths' | 'targetClients' | 'styles' | 'userTestimonials'
+type StepId = 'firmName' | 'ownerName' | 'ownerEmail' | 'ownerBio' | 'services' | 'serviceAreas' | 'strengths' | 'styles' | 'userTestimonials'
 
 interface Step {
   id: StepId
   question: string
   subtext?: string
-  type: 'text' | 'checkbox' | 'select' | 'textarea' | 'testimonials'
+  type: 'text' | 'checkbox' | 'select' | 'textarea' | 'testimonials' | 'area-select'
   options?: string[]
   placeholder?: string
   maxLength?: number
@@ -51,7 +53,7 @@ const STEPS: Step[] = [
     question: '代表者の経歴を入力しますか？（任意）',
     subtext: '入力するとサイトの事務所紹介に経歴が掲載されます。スキップも可能です。',
     type: 'textarea',
-    placeholder: '例）大手法律事務所に10年勤務後、2015年に独立開業。建設業・飲食店許可を中心に累計500件以上の申請を担当。',
+    placeholder: '例）大手法律事務所に10年勤務後、2015年に独立開業。',
     maxLength: 300,
     required: false,
   },
@@ -63,27 +65,19 @@ const STEPS: Step[] = [
     required: true,
   },
   {
-    id: 'prefecture',
-    question: '事務所の所在地を教えてください',
-    type: 'select',
-    options: ALL_PREFECTURES,
+    id: 'serviceAreas',
+    question: '対応エリアを教えてください',
+    subtext: 'サイトの「対応エリア」セクションに掲載されます。',
+    type: 'area-select',
     required: true,
   },
   {
     id: 'strengths',
     question: 'あなたの事務所の強みを教えてください',
     type: 'textarea',
-    placeholder: '例）開業支援累計100件\n英語対応可能\n飲食店出身のため現場を熟知',
+    placeholder: '例）開業支援累計100件\n英語対応可能',
     maxLength: 200,
     required: true,
-  },
-  {
-    id: 'targetClients',
-    question: 'ターゲット顧客を教えてください（任意）',
-    type: 'textarea',
-    placeholder: '例）都内で飲食店開業を検討している方\n外国籍の方向けビザ申請',
-    maxLength: 200,
-    required: false,
   },
   {
     id: 'styles',
@@ -109,9 +103,8 @@ const INITIAL_ANSWERS: GenerateInput = {
   ownerEmail: '',
   ownerBio: '',
   services: [],
-  prefecture: '',
+  serviceAreas: [],
   strengths: '',
-  targetClients: '',
   styles: [],
   userTestimonials: [],
 }
@@ -187,6 +180,196 @@ function TestimonialsInput({
           + お客様の声を追加（{value.length}/5）
         </button>
       )}
+    </div>
+  )
+}
+
+// ---- エリア選択コンポーネント ----
+
+function AreaSelectInput({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set(['関東']))
+  const [expandedPrefs, setExpandedPrefs] = useState<Set<string>>(new Set())
+
+  const isNationwide = value.includes('全国')
+
+  const toggleNationwide = () => {
+    onChange(isNationwide ? [] : ['全国'])
+  }
+
+  const getRegionPrefNames = (region: Region) => region.prefectures.map(p => p.name)
+
+  const isRegionAllChecked = (region: Region) => {
+    if (isNationwide) return true
+    return getRegionPrefNames(region).every(n => value.includes(n))
+  }
+
+  const isRegionPartialChecked = (region: Region) => {
+    if (isNationwide) return false
+    const prefNames = getRegionPrefNames(region)
+    return prefNames.some(n => value.includes(n)) && !prefNames.every(n => value.includes(n))
+  }
+
+  const toggleRegion = (region: Region) => {
+    if (isNationwide) return
+    const prefNames = getRegionPrefNames(region)
+    if (prefNames.every(n => value.includes(n))) {
+      onChange(value.filter(v => !prefNames.includes(v)))
+    } else {
+      onChange([...new Set([...value, ...prefNames])])
+    }
+  }
+
+  const isPrefChecked = (prefName: string) => isNationwide || value.includes(prefName)
+
+  const togglePref = (pref: Prefecture) => {
+    if (isNationwide) return
+    if (value.includes(pref.name)) {
+      const cityNames = pref.cities ?? []
+      onChange(value.filter(v => v !== pref.name && !cityNames.includes(v)))
+    } else {
+      onChange([...value, pref.name])
+    }
+  }
+
+  const isCityChecked = (city: string, pref: Prefecture) => {
+    return isNationwide || value.includes(pref.name) || value.includes(city)
+  }
+
+  const toggleCity = (city: string, pref: Prefecture) => {
+    if (isNationwide) return
+    if (value.includes(pref.name)) {
+      // Deselect pref, then add all cities except this one
+      const otherCities = (pref.cities ?? []).filter(c => c !== city)
+      onChange([...value.filter(v => v !== pref.name), ...otherCities])
+    } else if (value.includes(city)) {
+      onChange(value.filter(v => v !== city))
+    } else {
+      onChange([...value, city])
+    }
+  }
+
+  const toggleExpandRegion = (regionName: string) => {
+    setExpandedRegions(prev => {
+      const next = new Set(prev)
+      if (next.has(regionName)) next.delete(regionName)
+      else next.add(regionName)
+      return next
+    })
+  }
+
+  const toggleExpandPref = (prefName: string) => {
+    setExpandedPrefs(prev => {
+      const next = new Set(prev)
+      if (next.has(prefName)) next.delete(prefName)
+      else next.add(prefName)
+      return next
+    })
+  }
+
+  const selectedCount = isNationwide ? 1 : value.length
+
+  return (
+    <div className="space-y-2">
+      {/* 選択済み件数 */}
+      {selectedCount > 0 && (
+        <p className="text-xs text-blue-600 font-medium mb-2">
+          {isNationwide ? '全国を選択中' : `${selectedCount}エリアを選択中`}
+        </p>
+      )}
+
+      {/* 全国 */}
+      <label className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-colors ${isNationwide ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+        <input type="checkbox" checked={isNationwide} onChange={toggleNationwide} className="w-4 h-4 accent-blue-600" />
+        <span className="font-semibold text-sm text-gray-800">🌐 全国対応</span>
+      </label>
+
+      {/* 地域別 */}
+      {AREA_REGIONS.map(region => {
+        const regionChecked = isRegionAllChecked(region)
+        const regionPartial = isRegionPartialChecked(region)
+        const regionExpanded = expandedRegions.has(region.name)
+
+        return (
+          <div key={region.name} className={`border rounded-xl overflow-hidden transition-colors ${isNationwide ? 'opacity-40' : ''}`}>
+            {/* 地域ヘッダー */}
+            <div className="flex items-center gap-2 px-4 py-3 bg-gray-50">
+              <input
+                type="checkbox"
+                checked={regionChecked}
+                ref={el => { if (el) el.indeterminate = regionPartial }}
+                onChange={() => toggleRegion(region)}
+                disabled={isNationwide}
+                className="w-4 h-4 accent-blue-600 flex-shrink-0"
+              />
+              <button
+                type="button"
+                onClick={() => toggleExpandRegion(region.name)}
+                className="flex-1 flex items-center justify-between text-left"
+              >
+                <span className="text-sm font-semibold text-gray-700">{region.name}</span>
+                <span className="text-gray-400 text-xs">{regionExpanded ? '▲' : '▼'}</span>
+              </button>
+            </div>
+
+            {/* 都道府県一覧 */}
+            {regionExpanded && (
+              <div className="px-4 py-3 grid grid-cols-2 gap-y-2 gap-x-3 border-t border-gray-100">
+                {region.prefectures.map(pref => {
+                  const prefChecked = isPrefChecked(pref.name)
+                  const prefExpanded = expandedPrefs.has(pref.name)
+
+                  return (
+                    <div key={pref.name}>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={prefChecked}
+                          onChange={() => togglePref(pref)}
+                          disabled={isNationwide}
+                          className="w-3.5 h-3.5 accent-blue-600 flex-shrink-0"
+                        />
+                        <span
+                          className={`text-sm text-gray-700 cursor-pointer flex-1 ${prefChecked ? 'font-medium text-blue-700' : ''}`}
+                          onClick={() => !isNationwide && togglePref(pref)}
+                        >
+                          {pref.name}
+                        </span>
+                        {pref.cities && (
+                          <button
+                            type="button"
+                            onClick={() => toggleExpandPref(pref.name)}
+                            className="text-xs text-gray-400 hover:text-gray-600 flex-shrink-0"
+                          >
+                            {prefExpanded ? '▲' : '＋'}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* 市区町村 */}
+                      {pref.cities && prefExpanded && (
+                        <div className="ml-5 mt-2 space-y-1 col-span-2">
+                          {pref.cities.map(city => (
+                            <label key={city} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={isCityChecked(city, pref)}
+                                onChange={() => toggleCity(city, pref)}
+                                disabled={isNationwide}
+                                className="w-3 h-3 accent-blue-600"
+                              />
+                              <span className="text-xs text-gray-600">{city}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -383,20 +566,6 @@ export function QuestionWizard() {
               </div>
             )}
 
-            {currentStep.type === 'select' && (
-              <select
-                value={currentValue as string}
-                onChange={(e) => setValue(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                autoFocus
-              >
-                <option value="">都道府県を選択</option>
-                {currentStep.options?.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-            )}
-
             {currentStep.type === 'checkbox' && (
               <div className="grid grid-cols-2 gap-2">
                 {currentStep.options?.map((opt) => {
@@ -421,6 +590,13 @@ export function QuestionWizard() {
                   )
                 })}
               </div>
+            )}
+
+            {currentStep.type === 'area-select' && (
+              <AreaSelectInput
+                value={(answers.serviceAreas ?? []) as string[]}
+                onChange={(v) => setAnswers((prev) => ({ ...prev, serviceAreas: v }))}
+              />
             )}
 
             {currentStep.type === 'testimonials' && (

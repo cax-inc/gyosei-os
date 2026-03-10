@@ -106,9 +106,10 @@ function ProfilePhotoUpload({ src, editable, onChange }: {
 
 // ─── FAQ アコーディオン アイテム ──────────────────────────────────────────────
 
-function FaqItem({ question, answer, editable, onChangeQ, onChangeA }: {
+function FaqItem({ question, answer, editable, onChangeQ, onChangeA, onDelete }: {
   question: string; answer: string; editable: boolean
   onChangeQ: (v: string) => void; onChangeA: (v: string) => void
+  onDelete?: () => void
 }) {
   const [open, setOpen] = useState(editable)
 
@@ -127,11 +128,23 @@ function FaqItem({ question, answer, editable, onChangeQ, onChangeA }: {
           <ET as="p" value={question} onChange={editable ? onChangeQ : undefined}
             style={{ fontSize: 16, fontWeight: 600, color: '#111827', lineHeight: 1.6, flex: 1, display: 'block' } as React.CSSProperties} />
         </div>
-        {!editable && (
-          <span style={{ fontSize: 20, color: '#9ca3af', flexShrink: 0, marginTop: 2, transform: open ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>
-            +
-          </span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {editable && onDelete && (
+            <span
+              onClick={e => { e.stopPropagation(); onDelete() }}
+              style={{
+                background: '#fee2e2', border: 'none', borderRadius: '50%',
+                width: 24, height: 24, fontSize: 12, color: '#ef4444',
+                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >✕</span>
+          )}
+          {!editable && (
+            <span style={{ fontSize: 20, color: '#9ca3af', marginTop: 2, transform: open ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>
+              +
+            </span>
+          )}
+        </div>
       </button>
       {(open || editable) && (
         <div style={{ display: 'flex', gap: 16, paddingBottom: 24, alignItems: 'flex-start' }}>
@@ -242,10 +255,6 @@ const DEFAULT_PRICING: PricingItem[] = [
   { name: '飲食店営業許可', price: '¥55,000〜', features: ['保健所申請代行', '図面作成補助', '開業前相談込み'] },
 ]
 
-const DEFAULT_AREA: AreaContent = {
-  description: '地域に根ざした行政書士として、幅広いエリアのご相談に対応しています。',
-  areas: ['中央区', '千代田区', '港区', '新宿区', '渋谷区', '目黒区', '世田谷区', '品川区'],
-}
 
 
 // ─── Props ───────────────────────────────────────────────────────────────────
@@ -266,8 +275,10 @@ export function SiteTemplate({
 }: SiteTemplateProps) {
   const { hero, services, profile, faq, cta } = content
   const pricing = content.pricing ?? DEFAULT_PRICING
-  const area = content.area ?? DEFAULT_AREA
+  const area = content.area
   const testimonials = content.testimonials ?? []
+  const prefLabel = content.prefectureLabel ?? `${prefecture}の行政書士`
+  const pricingCtaText = content.pricingCtaText ?? '無料相談はこちら →'
 
   const cb = editable && onUpdate ? onUpdate : undefined
 
@@ -297,11 +308,33 @@ export function SiteTemplate({
     cb?.({ ...content, pricing: next })
   }
   const upArea = (k: keyof AreaContent, v: string) => {
+    if (!area) return
     cb?.({ ...content, area: { ...area, [k]: v } })
+  }
+  const upAreaItem = (i: number, v: string) => {
+    if (!area) return
+    const next = area.areas.map((a, idx) => idx === i ? v : a)
+    cb?.({ ...content, area: { ...area, areas: next } })
   }
   const upTestimonial = (i: number, k: keyof TestimonialItem, v: string) => {
     const next = testimonials.map((t, idx) => idx === i ? { ...t, [k]: v } : t)
     cb?.({ ...content, testimonials: next })
+  }
+  const upPrefectureLabel = (v: string) => cb?.({ ...content, prefectureLabel: v })
+  const upPricingCtaText = (v: string) => cb?.({ ...content, pricingCtaText: v })
+
+  const upFaqDelete = (i: number) => {
+    cb?.({ ...content, faq: faq.filter((_, idx) => idx !== i) })
+  }
+  const upServiceDelete = (i: number) => {
+    cb?.({ ...content, services: services.filter((_, idx) => idx !== i) })
+  }
+  const upTestimonialDelete = (i: number) => {
+    cb?.({ ...content, testimonials: testimonials.filter((_, idx) => idx !== i) })
+  }
+  const upAreaItemDelete = (i: number) => {
+    if (!area) return
+    cb?.({ ...content, area: { ...area, areas: area.areas.filter((_, idx) => idx !== i) } })
   }
 
   // ── スタイル定数 ────────────────────────────────────────────────────────────
@@ -380,13 +413,11 @@ export function SiteTemplate({
 
         <div className="st-container st-hero-inner">
           <div style={{ marginBottom: 24 }}>
-            <span style={{
+            <ET as="span" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined} style={{
               display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
               color: '#6366f1', background: 'rgba(99,102,241,0.08)',
               padding: '5px 14px', borderRadius: 100, border: '1px solid rgba(99,102,241,0.15)',
-            }}>
-              {prefecture}の行政書士
-            </span>
+            }} />
           </div>
 
           <ET as="h1" value={hero.headline} onChange={v => upHero('headline', v)} multi
@@ -466,7 +497,8 @@ export function SiteTemplate({
             />
             <div>
               <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.5px', color: '#111827' }}>{firmName}</h3>
-              <p style={{ fontSize: 13, color: '#6366f1', fontWeight: 600, marginBottom: 20, letterSpacing: '0.3px' }}>{prefecture}の行政書士</p>
+              <ET as="p" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined}
+                style={{ fontSize: 13, color: '#6366f1', fontWeight: 600, marginBottom: 20, letterSpacing: '0.3px', display: 'block' } as React.CSSProperties} />
               <ET as="p" value={profile.body} onChange={v => upProfile('body', v)} multi
                 style={{ fontSize: 15, color: '#374151', lineHeight: 1.95, display: 'block', marginBottom: 24 } as React.CSSProperties}
               />
@@ -495,7 +527,16 @@ export function SiteTemplate({
                 background: '#fff', borderRadius: 16, padding: '32px 28px',
                 border: '1px solid #e5e7eb',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                position: 'relative',
               }}>
+                {editable && (
+                  <button onClick={() => upServiceDelete(i)} style={{
+                    position: 'absolute', top: 8, right: 8,
+                    background: '#fee2e2', border: 'none', borderRadius: '50%',
+                    width: 24, height: 24, fontSize: 12, color: '#ef4444',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>✕</button>
+                )}
                 <ET as="div" value={svc.icon} onChange={v => upService(i, 'icon', v)}
                   style={{ fontSize: 36, marginBottom: 16, display: 'block' } as React.CSSProperties} />
                 <ET as="h3" value={svc.name} onChange={v => upService(i, 'name', v)}
@@ -563,36 +604,46 @@ export function SiteTemplate({
               border: '2px solid #6366f1', color: '#6366f1', fontWeight: 700,
               padding: '13px 32px', borderRadius: 100, fontSize: 15, textDecoration: 'none',
             }}>
-              無料相談はこちら →
+              <ET value={pricingCtaText} onChange={editable ? upPricingCtaText : undefined} style={{ pointerEvents: 'none' } as React.CSSProperties} />
             </a>
           </div>
         </div>
       </section>
 
       {/* ── Area（対応エリア） ── */}
-      <section id="area" className="st-section" style={{ background: '#f9fafb', borderTop: '1px solid #f3f4f6' }}>
-        <div className="st-container">
-          <span style={sectionLabel}>Area</span>
-          <h2 style={{ ...sectionTitle, marginBottom: 20 }}>対応エリア</h2>
-          <ET as="p" value={area.description} onChange={v => upArea('description', v)} multi
-            style={{ fontSize: 15, color: '#6b7280', marginBottom: 36, lineHeight: 1.7, display: 'block' } as React.CSSProperties}
-          />
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            {area.areas.map((a, i) => (
-              <span key={i} style={{
-                fontSize: 13, fontWeight: 600, color: '#374151',
-                background: '#fff', border: '1.5px solid #e5e7eb',
-                padding: '8px 18px', borderRadius: 100,
-              }}>
-                {a}
-              </span>
-            ))}
+      {area && (
+        <section id="area" className="st-section" style={{ background: '#f9fafb', borderTop: '1px solid #f3f4f6' }}>
+          <div className="st-container">
+            <span style={sectionLabel}>Area</span>
+            <h2 style={{ ...sectionTitle, marginBottom: 20 }}>対応エリア</h2>
+            <ET as="p" value={area.description} onChange={editable ? v => upArea('description', v) : undefined} multi
+              style={{ fontSize: 15, color: '#6b7280', marginBottom: 36, lineHeight: 1.7, display: 'block' } as React.CSSProperties}
+            />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              {area.areas.map((a, i) => (
+                <span key={i} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  fontSize: 13, fontWeight: 600, color: '#374151',
+                  background: '#fff', border: '1.5px solid #e5e7eb',
+                  padding: '8px 18px', borderRadius: 100,
+                }}>
+                  <ET as="span" value={a} onChange={editable ? v => upAreaItem(i, v) : undefined} style={{} as React.CSSProperties} />
+                  {editable && (
+                    <button onClick={() => upAreaItemDelete(i)} style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: '#9ca3af', fontSize: 12, padding: 0, lineHeight: 1,
+                      display: 'flex', alignItems: 'center',
+                    }}>✕</button>
+                  )}
+                </span>
+              ))}
+            </div>
+            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 24 }}>
+              ※ 上記以外のエリアもご相談ください。オンライン対応も承っています。
+            </p>
           </div>
-          <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 24 }}>
-            ※ 上記以外のエリアもご相談ください。オンライン対応も承っています。
-          </p>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Testimonials（お客様の声） ── */}
       {testimonials.length > 0 && (
@@ -605,7 +656,16 @@ export function SiteTemplate({
                 <div key={i} style={{
                   background: '#f9fafb', borderRadius: 16, padding: '32px 28px',
                   border: '1px solid #e5e7eb',
+                  position: 'relative',
                 }}>
+                  {editable && (
+                    <button onClick={() => upTestimonialDelete(i)} style={{
+                      position: 'absolute', top: 8, right: 8,
+                      background: '#fee2e2', border: 'none', borderRadius: '50%',
+                      width: 24, height: 24, fontSize: 12, color: '#ef4444',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>✕</button>
+                  )}
                   <div style={{ fontSize: 28, color: '#c7d2fe', marginBottom: 16, lineHeight: 1 }}>&ldquo;</div>
                   <ET as="p" value={t.content} onChange={v => upTestimonial(i, 'content', v)} multi
                     style={{ fontSize: 14, color: '#374151', lineHeight: 1.8, marginBottom: 24, display: 'block' } as React.CSSProperties}
@@ -648,6 +708,7 @@ export function SiteTemplate({
                 editable={editable}
                 onChangeQ={v => upFaq(i, 'question', v)}
                 onChangeA={v => upFaq(i, 'answer', v)}
+                onDelete={editable ? () => upFaqDelete(i) : undefined}
               />
             ))}
             <div style={{ borderTop: '1px solid #e5e7eb' }} />
@@ -716,7 +777,7 @@ export function SiteTemplate({
           </div>
           <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', letterSpacing: '-0.3px' }}>{firmName}</p>
         </div>
-        <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16 }}>{prefecture}の行政書士</p>
+        <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16 }}>{prefLabel}</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 24 }}>
           {[['#about', '事務所について'], ['#services', 'サービス'], ['#faq', 'FAQ'], ['#contact', 'お問い合わせ']].map(([href, label]) => (
             <a key={href} href={href} style={{ fontSize: 12, color: '#9ca3af', textDecoration: 'none' }}>{label}</a>

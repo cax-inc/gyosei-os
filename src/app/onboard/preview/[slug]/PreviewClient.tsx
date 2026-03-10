@@ -470,6 +470,8 @@ interface Props {
 
 export function PreviewClient({ slug, firmName, prefecture, initialContent }: Props) {
   const [content, setContent] = useState<SiteContent>(initialContent)
+  const [history, setHistory] = useState<SiteContent[]>([initialContent])
+  const [historyIndex, setHistoryIndex] = useState(0)
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [showRegisterModal, setShowRegisterModal] = useState(false)
@@ -490,8 +492,7 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
     }
   }, [slug])
 
-  const handleUpdate = useCallback(async (c: SiteContent) => {
-    setContent(c)
+  const saveToDb = useCallback(async (c: SiteContent) => {
     setSaving(true)
     try {
       await fetch(`/api/editor/${slug}`, {
@@ -506,6 +507,39 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
       setSaving(false)
     }
   }, [slug])
+
+  const handleUpdate = useCallback(async (c: SiteContent) => {
+    setContent(c)
+    setHistory(prev => [...prev.slice(0, historyIndex + 1), c])
+    setHistoryIndex(prev => prev + 1)
+    await saveToDb(c)
+  }, [historyIndex, saveToDb])
+
+  const undo = useCallback(async () => {
+    if (historyIndex <= 0) return
+    const newIndex = historyIndex - 1
+    setHistoryIndex(newIndex)
+    setContent(history[newIndex])
+    await saveToDb(history[newIndex])
+  }, [history, historyIndex, saveToDb])
+
+  const redo = useCallback(async () => {
+    if (historyIndex >= history.length - 1) return
+    const newIndex = historyIndex + 1
+    setHistoryIndex(newIndex)
+    setContent(history[newIndex])
+    await saveToDb(history[newIndex])
+  }, [history, historyIndex, saveToDb])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return
+      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo() }
+      if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo() }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [undo, redo])
 
   const handleReset = useCallback(async () => {
     if (!confirm('編集内容を破棄して、AIが生成した最初の状態に戻しますか？')) return

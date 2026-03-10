@@ -336,6 +336,13 @@ export function SiteTemplate({
     if (!area) return
     cb?.({ ...content, area: { ...area, areas: area.areas.filter((_, idx) => idx !== i) } })
   }
+  const upStrengthDelete = (i: number) => {
+    const next = profile.strengths.filter((_, idx) => idx !== i)
+    cb?.({ ...content, profile: { ...profile, strengths: next } })
+  }
+  const upPricingDelete = (i: number) => {
+    cb?.({ ...content, pricing: pricing.filter((_, idx) => idx !== i) })
+  }
 
   // ── スタイル定数 ────────────────────────────────────────────────────────────
   const sectionLabel: React.CSSProperties = {
@@ -471,11 +478,20 @@ export function SiteTemplate({
               padding: '28px 24px',
               borderRight: i < 2 ? '1px solid #f3f4f6' : undefined,
               display: 'flex', alignItems: 'center', gap: 14,
+              position: 'relative',
             }}>
               <span style={{ fontSize: 22 }}>{['⚡', '🤝', '🏆'][i]}</span>
               <ET as="span" value={s} onChange={v => upStrength(i, v)}
                 style={{ fontSize: 14, fontWeight: 600, color: '#374151', letterSpacing: '-0.2px' } as React.CSSProperties}
               />
+              {editable && (
+                <button onClick={() => upStrengthDelete(i)} style={{
+                  position: 'absolute', top: 8, right: 8,
+                  background: '#fee2e2', border: 'none', borderRadius: '50%',
+                  width: 20, height: 20, fontSize: 11, color: '#ef4444',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>✕</button>
+              )}
             </div>
           ))}
         </div>
@@ -505,10 +521,20 @@ export function SiteTemplate({
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {profile.strengths.map((s, i) => (
                   <span key={i} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
                     fontSize: 12, fontWeight: 600, color: '#6366f1',
                     background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.15)',
                     padding: '5px 12px', borderRadius: 100,
-                  }}>{s}</span>
+                  }}>
+                    {s}
+                    {editable && (
+                      <button onClick={() => upStrengthDelete(i)} style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: '#9ca3af', fontSize: 11, padding: 0, lineHeight: 1,
+                        display: 'flex', alignItems: 'center',
+                      }}>✕</button>
+                    )}
+                  </span>
                 ))}
               </div>
             </div>
@@ -575,6 +601,16 @@ export function SiteTemplate({
                 position: 'relative',
                 boxShadow: i === 1 ? '0 8px 32px rgba(99,102,241,0.25)' : '0 1px 4px rgba(0,0,0,0.04)',
               }}>
+                {editable && (
+                  <button onClick={() => upPricingDelete(i)} style={{
+                    position: 'absolute', top: 8, right: 8,
+                    background: i === 1 ? 'rgba(255,255,255,0.2)' : '#fee2e2',
+                    border: 'none', borderRadius: '50%',
+                    width: 24, height: 24, fontSize: 12,
+                    color: i === 1 ? '#fff' : '#ef4444',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>✕</button>
+                )}
                 {i === 1 && (
                   <div style={{
                     position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',

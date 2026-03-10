@@ -534,8 +534,11 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return
-      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo() }
-      if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo() }
+      // Undo: Cmd+Z (Mac) / Ctrl+Z (Windows)
+      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return }
+      // Redo: Cmd+Shift+Z (Mac) / Ctrl+Shift+Z / Ctrl+Y (Windows)
+      if (e.key === 'z' && e.shiftKey) { e.preventDefault(); redo(); return }
+      if (e.key === 'y' && e.ctrlKey && !e.metaKey) { e.preventDefault(); redo() }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)

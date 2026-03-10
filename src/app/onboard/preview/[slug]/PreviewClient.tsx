@@ -94,9 +94,278 @@ function ProModal({ onClose }: { onClose: () => void }) {
   )
 }
 
+// ── プラン選択モーダル ─────────────────────────────────────────────────────────
+
+function PlanModal({
+  onClose,
+  onSelectFree,
+  onSelectReview,
+}: {
+  onClose: () => void
+  onSelectFree: () => void
+  onSelectReview: () => void
+}) {
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+        overflowY: 'auto',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: '#f9fafb', borderRadius: 24, padding: '48px 40px', maxWidth: 960, width: '100%',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.25)',
+          position: 'relative',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 閉じるボタン */}
+        <button onClick={onClose} style={{
+          position: 'absolute', top: 20, right: 20,
+          background: '#e5e7eb', border: 'none', borderRadius: 100,
+          width: 32, height: 32, cursor: 'pointer',
+          fontSize: 16, color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>×</button>
+
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: '#111827', marginBottom: 8, letterSpacing: '-0.6px', textAlign: 'center' }}>
+          公開プランを選んでください
+        </h2>
+        <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 36, textAlign: 'center' }}>
+          今すぐ無料で公開することも、プロに確認してもらうこともできます
+        </p>
+
+        {/* カード群 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20, marginBottom: 28 }}>
+
+          {/* Plan 1: 無料 */}
+          <div style={{
+            background: '#fff', borderRadius: 20, padding: 28,
+            border: '1px solid #e5e7eb',
+            display: 'flex', flexDirection: 'column', gap: 12,
+          }}>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>プラン 1</p>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 4 }}>このまま公開</h3>
+              <p style={{ fontSize: 26, fontWeight: 800, color: '#111827' }}>無料</p>
+            </div>
+            <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>今すぐサイトを公開できます</p>
+            <button
+              onClick={onSelectFree}
+              style={{
+                marginTop: 'auto', padding: '12px', borderRadius: 10, border: '1px solid #d1d5db',
+                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              このまま公開する
+            </button>
+          </div>
+
+          {/* Plan 2: プロに確認 */}
+          <div style={{
+            background: '#fff', borderRadius: 20, padding: 28,
+            border: '2px solid #6366f1',
+            display: 'flex', flexDirection: 'column', gap: 12,
+            position: 'relative',
+          }}>
+            {/* 人気バッジ */}
+            <span style={{
+              position: 'absolute', top: -12, left: 20,
+              background: '#f59e0b', color: '#fff',
+              fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 100,
+              letterSpacing: '0.5px',
+            }}>★ 人気</span>
+
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#6366f1', marginBottom: 4 }}>プラン 2</p>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 4 }}>プロに確認してもらう</h3>
+              <p style={{ fontSize: 26, fontWeight: 800, color: '#111827' }}>¥50,000</p>
+            </div>
+            <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>現役エンジニアが技術・表示・フォーム動作を確認します</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                'フォーム送信の動作確認',
+                'スマホ・PC表示の確認',
+                '問い合わせ通知メールの確認',
+                'ページ表示速度の確認',
+              ].map(item => (
+                <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151' }}>
+                  <span style={{ color: '#6366f1', fontWeight: 700 }}>✓</span> {item}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={onSelectReview}
+              style={{
+                marginTop: 'auto', padding: '12px', borderRadius: 10, border: 'none',
+                background: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              レビュアーを選ぶ →
+            </button>
+          </div>
+
+          {/* Plan 3: プロに制作依頼 */}
+          <div style={{
+            background: '#fff', borderRadius: 20, padding: 28,
+            border: '1px solid #e5e7eb',
+            display: 'flex', flexDirection: 'column', gap: 12,
+          }}>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>プラン 3</p>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 4 }}>プロに制作依頼</h3>
+              <p style={{ fontSize: 26, fontWeight: 800, color: '#111827' }}>¥500,000〜</p>
+            </div>
+            <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>一からプロが制作します</p>
+            <button
+              onClick={() => alert('準備中です。お問い合わせください。')}
+              style={{
+                marginTop: 'auto', padding: '12px', borderRadius: 10, border: '1px solid #d1d5db',
+                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              相談する →
+            </button>
+          </div>
+        </div>
+
+        <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center', lineHeight: 1.7 }}>
+          ※ AIと最新技術（Next.js）による効率化により、従来の制作会社と比較して大幅なコスト削減を実現しています。
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ── レビュアー選択モーダル ────────────────────────────────────────────────────
+
+function ReviewerModal({
+  onClose,
+  onSelectReviewer,
+}: {
+  onClose: () => void
+  onSelectReviewer: (reviewer: string) => void
+}) {
+  const reviewers = [
+    {
+      id: 'tanaka',
+      name: '田中 健太',
+      note: '※プレースホルダー',
+      role: 'フロントエンドエンジニア',
+      org: 'フリーランス・経験8年',
+      specialty: 'UI/UX・表示速度・モバイル対応',
+      price: '¥50,000',
+      buttonLabel: 'このレビュアーに依頼する',
+    },
+    {
+      id: 'reviewer_b',
+      name: '（名前は後で設定）',
+      note: '',
+      role: 'エンジニア部長',
+      org: 'GMOインターネットグループ',
+      specialty: 'セキュリティ・システム品質',
+      price: '¥50,000',
+      buttonLabel: 'このレビュアーに依頼する',
+    },
+    {
+      id: 'double',
+      name: 'ダブルチェック',
+      note: '',
+      role: '両名によるW確認',
+      org: 'より安心・確実なチェック',
+      specialty: '',
+      price: '¥80,000',
+      buttonLabel: '二人に依頼する',
+    },
+  ]
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+        overflowY: 'auto',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: '#f9fafb', borderRadius: 24, padding: '48px 40px', maxWidth: 960, width: '100%',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.25)',
+          position: 'relative',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 閉じるボタン */}
+        <button onClick={onClose} style={{
+          position: 'absolute', top: 20, right: 20,
+          background: '#e5e7eb', border: 'none', borderRadius: 100,
+          width: 32, height: 32, cursor: 'pointer',
+          fontSize: 16, color: '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>×</button>
+
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: '#111827', marginBottom: 8, letterSpacing: '-0.6px', textAlign: 'center' }}>
+          レビュアーを選んでください
+        </h2>
+        <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 36, textAlign: 'center' }}>
+          現役エンジニアが技術動作を確認し、お名前付きで承認します
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+          {reviewers.map(r => (
+            <div key={r.id} style={{
+              background: '#fff', borderRadius: 20, padding: 28,
+              border: '1px solid #e5e7eb',
+              display: 'flex', flexDirection: 'column', gap: 12,
+            }}>
+              <div>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: '#111827', marginBottom: 2 }}>
+                  {r.name}
+                  {r.note && <span style={{ fontSize: 11, fontWeight: 500, color: '#9ca3af', marginLeft: 8 }}>{r.note}</span>}
+                </h3>
+                <p style={{ fontSize: 13, color: '#6366f1', fontWeight: 600 }}>{r.role}</p>
+                <p style={{ fontSize: 12, color: '#6b7280' }}>{r.org}</p>
+              </div>
+              {r.specialty && (
+                <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>
+                  <span style={{ fontWeight: 700 }}>専門:</span> {r.specialty}
+                </p>
+              )}
+              <p style={{ fontSize: 24, fontWeight: 800, color: '#111827' }}>{r.price}</p>
+              <button
+                onClick={() => onSelectReviewer(r.id)}
+                style={{
+                  marginTop: 'auto', padding: '12px', borderRadius: 10, border: 'none',
+                  background: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                }}
+              >
+                {r.buttonLabel}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── 登録モーダル ───────────────────────────────────────────────────────────────
 
-function RegisterModal({ slug, onClose }: { slug: string; onClose: () => void }) {
+function RegisterModal({
+  slug,
+  onClose,
+  plan,
+  reviewer,
+}: {
+  slug: string
+  onClose: () => void
+  plan?: string
+  reviewer?: string
+}) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -110,7 +379,7 @@ function RegisterModal({ slug, onClose }: { slug: string; onClose: () => void })
     const res = await fetch('/api/onboard/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug, name, email }),
+      body: JSON.stringify({ slug, name, email, plan, reviewer }),
     })
 
     if (res.ok) {
@@ -201,7 +470,11 @@ function RegisterModal({ slug, onClose }: { slug: string; onClose: () => void })
               marginTop: 4,
             }}
           >
-            {loading ? '公開中...' : '保存してサイトを公開する →'}
+            {loading
+              ? '送信中...'
+              : plan === 'review'
+              ? '登録してレビューを依頼する →'
+              : '保存してサイトを公開する →'}
           </button>
           <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center' }}>
             パスワード不要。次回からメールアドレスだけでログインできます。
@@ -291,6 +564,10 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [showProModal, setShowProModal] = useState(false)
   const [showRegisterModal, setShowRegisterModal] = useState(false)
+  const [showPlanModal, setShowPlanModal] = useState(false)
+  const [showReviewerModal, setShowReviewerModal] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'review' | 'custom' | null>(null)
+  const [selectedReviewer, setSelectedReviewer] = useState<string | null>(null)
   const [showToast, setShowToast] = useState(true)
   const [resetting, setResetting] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
@@ -435,7 +712,7 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
 
           {/* 公開ボタン */}
           <button
-            onClick={() => setShowRegisterModal(true)}
+            onClick={() => setShowPlanModal(true)}
             style={{
               background: '#6366f1', color: '#fff', fontWeight: 700,
               fontSize: 13, padding: '7px 18px', borderRadius: 8, border: 'none',
@@ -470,8 +747,45 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
       {/* ── Proモーダル ── */}
       {showProModal && <ProModal onClose={() => setShowProModal(false)} />}
 
+      {/* ── プラン選択モーダル ── */}
+      {showPlanModal && (
+        <PlanModal
+          onClose={() => setShowPlanModal(false)}
+          onSelectFree={() => {
+            setSelectedPlan('free')
+            setSelectedReviewer(null)
+            setShowPlanModal(false)
+            setShowRegisterModal(true)
+          }}
+          onSelectReview={() => {
+            setSelectedPlan('review')
+            setShowPlanModal(false)
+            setShowReviewerModal(true)
+          }}
+        />
+      )}
+
+      {/* ── レビュアー選択モーダル ── */}
+      {showReviewerModal && (
+        <ReviewerModal
+          onClose={() => setShowReviewerModal(false)}
+          onSelectReviewer={(reviewer) => {
+            setSelectedReviewer(reviewer)
+            setShowReviewerModal(false)
+            setShowRegisterModal(true)
+          }}
+        />
+      )}
+
       {/* ── 登録モーダル ── */}
-      {showRegisterModal && <RegisterModal slug={slug} onClose={() => setShowRegisterModal(false)} />}
+      {showRegisterModal && (
+        <RegisterModal
+          slug={slug}
+          onClose={() => setShowRegisterModal(false)}
+          plan={selectedPlan ?? undefined}
+          reviewer={selectedReviewer ?? undefined}
+        />
+      )}
 
       {/* ── 生成完了トースト ── */}
       {showToast && (

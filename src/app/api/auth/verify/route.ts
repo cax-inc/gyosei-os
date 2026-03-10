@@ -29,7 +29,12 @@ export async function GET(req: NextRequest) {
     ? 'https://app.coreai-x.com'
     : 'http://localhost:3000'
 
-  const res = NextResponse.redirect(new URL('/sites', appUrl))
+  // そのユーザーのサイトを取得してダッシュボードに直接リダイレクト
+  const site = await prisma.magicToken.findUnique({ where: { token } })
+    .then(() => prisma.aiSite.findFirst({ where: { ownerEmail: magic.email }, orderBy: { createdAt: 'desc' } }))
+
+  const redirectPath = site ? `/dashboard/${site.slug}` : '/onboard'
+  const res = NextResponse.redirect(new URL(redirectPath, appUrl))
   res.cookies.set(name, value, options)
   return res
 }

@@ -352,6 +352,7 @@ export function SiteTemplate({
   const sectionTitle: React.CSSProperties = {
     fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.1, color: '#111827',
   }
+  const sectionTitleClass = 'st-section-title'
   const container: React.CSSProperties = { maxWidth: 1100, margin: '0 auto' }
 
   return (
@@ -428,7 +429,7 @@ export function SiteTemplate({
           </div>
 
           <ET as="h1" value={hero.headline} onChange={v => upHero('headline', v)} multi
-            className="block"
+            className="block st-hero-title"
             style={{
               fontSize: 'clamp(36px, 5vw, 64px)' as string, fontWeight: 800,
               lineHeight: 1.1, letterSpacing: '-2px', color: '#1e1b4b',
@@ -437,7 +438,7 @@ export function SiteTemplate({
           />
 
           <ET as="p" value={hero.subheadline} onChange={v => upHero('subheadline', v)} multi
-            className="block"
+            className="block st-hero-sub"
             style={{ fontSize: 17, color: '#4b5563', lineHeight: 1.8, maxWidth: 520, marginBottom: 44, fontWeight: 400 } as React.CSSProperties}
           />
 
@@ -502,7 +503,8 @@ export function SiteTemplate({
         <div className="st-container">
           <span style={sectionLabel}>About</span>
           <ET as="h2" value={profile.title} onChange={v => upProfile('title', v)}
-            style={{ ...sectionTitle, marginBottom: 56, display: 'block' } as React.CSSProperties}
+            className={`block ${sectionTitleClass}`}
+            style={{ ...sectionTitle, marginBottom: 56 } as React.CSSProperties}
           />
 
           <div className="st-about-grid">
@@ -546,7 +548,7 @@ export function SiteTemplate({
       <section id="services" className="st-section" style={{ background: '#f9fafb' }}>
         <div className="st-container">
           <span style={sectionLabel}>Services</span>
-          <h2 style={{ ...sectionTitle, marginBottom: 56 }}>サービス内容</h2>
+          <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 56 }}>サービス内容</h2>
           <div className="st-services-grid">
             {services.map((svc, i) => (
               <div key={i} style={{
@@ -588,7 +590,7 @@ export function SiteTemplate({
       <section id="pricing" className="st-section" style={{ background: '#fff' }}>
         <div className="st-container">
           <span style={sectionLabel}>Pricing</span>
-          <h2 style={{ ...sectionTitle, marginBottom: 12 }}>料金の目安</h2>
+          <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 12 }}>料金の目安</h2>
           <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 56 }}>
             ※ 料金は内容により異なる場合があります。まずはお気軽にご相談ください。
           </p>
@@ -651,7 +653,7 @@ export function SiteTemplate({
         <section id="area" className="st-section" style={{ background: '#f9fafb', borderTop: '1px solid #f3f4f6' }}>
           <div className="st-container">
             <span style={sectionLabel}>Area</span>
-            <h2 style={{ ...sectionTitle, marginBottom: 20 }}>対応エリア</h2>
+            <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 20 }}>対応エリア</h2>
             <ET as="p" value={area.description} onChange={editable ? v => upArea('description', v) : undefined} multi
               style={{ fontSize: 15, color: '#6b7280', marginBottom: 36, lineHeight: 1.7, display: 'block' } as React.CSSProperties}
             />
@@ -686,7 +688,7 @@ export function SiteTemplate({
         <section id="testimonials" className="st-section" style={{ background: '#fff' }}>
           <div className="st-container">
             <span style={sectionLabel}>Testimonials</span>
-            <h2 style={{ ...sectionTitle, marginBottom: 56 }}>お客様の声</h2>
+            <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 56 }}>お客様の声</h2>
             <div className="st-testimonials-grid">
               {testimonials.map((t, i) => (
                 <div key={i} style={{
@@ -734,7 +736,7 @@ export function SiteTemplate({
       <section id="faq" className="st-section" style={{ background: '#f9fafb' }}>
         <div style={{ maxWidth: 760, margin: '0 auto' }} className="st-container">
           <span style={sectionLabel}>FAQ</span>
-          <h2 style={{ ...sectionTitle, marginBottom: 56 }}>よくある質問</h2>
+          <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 56 }}>よくある質問</h2>
           <div>
             {faq.map((item, i) => (
               <FaqItem
@@ -759,7 +761,8 @@ export function SiteTemplate({
       }}>
         <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
           <ET as="h2" value={cta.headline} onChange={v => upCta('headline', v)}
-            style={{ fontSize: 'clamp(28px, 5.5vw, 44px)', fontWeight: 800, letterSpacing: '-1.5px', marginBottom: 16, lineHeight: 1.1, display: 'block', color: '#1e1b4b' } as React.CSSProperties}
+            className="block st-cta-title"
+            style={{ fontSize: 'clamp(28px, 5.5vw, 44px)', fontWeight: 800, letterSpacing: '-1.5px', marginBottom: 16, lineHeight: 1.1, color: '#1e1b4b' } as React.CSSProperties}
           />
           <ET as="p" value={cta.subheadline} onChange={v => upCta('subheadline', v)} multi
             style={{ fontSize: 16, color: '#6b7280', lineHeight: 1.75, marginBottom: 44, display: 'block' } as React.CSSProperties}
@@ -780,7 +783,7 @@ export function SiteTemplate({
       <section id="contact" className="st-section" style={{ background: '#fff' }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <span style={sectionLabel}>Contact</span>
-          <h2 style={{ ...sectionTitle, marginBottom: 8 }}>お問い合わせ</h2>
+          <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 8 }}>お問い合わせ</h2>
           <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 48 }}>
             24時間受付 · 1営業日以内にご返信します
           </p>

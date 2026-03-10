@@ -91,6 +91,25 @@ body {
   gap: 12px;
 }
 
+/* ── Phone frame 内のモバイルスタイル（プレビュー用） ── */
+.phone-frame .st-container   { padding: 0 16px; }
+.phone-frame .st-section     { padding: 56px 16px; }
+.phone-frame .st-hero-inner  { padding: 56px 16px 64px; }
+.phone-frame .st-hero-title  { font-size: 32px !important; letter-spacing: -1px !important; }
+.phone-frame .st-hero-sub    { font-size: 15px !important; }
+.phone-frame .st-hero-btns   { flex-direction: column; align-items: flex-start; }
+.phone-frame .st-section-title { font-size: 24px !important; letter-spacing: -0.8px !important; }
+.phone-frame .st-cta-title   { font-size: 26px !important; letter-spacing: -1px !important; }
+.phone-frame .st-strengths-grid { grid-template-columns: 1fr; }
+.phone-frame .st-strengths-grid > div { border-right: none !important; border-bottom: 1px solid #f3f4f6; }
+.phone-frame .st-strengths-grid > div:last-child { border-bottom: none; }
+.phone-frame .st-about-grid  { grid-template-columns: 1fr; gap: 24px; padding: 24px; }
+.phone-frame .st-services-grid { grid-template-columns: 1fr; }
+.phone-frame .st-pricing-grid  { grid-template-columns: 1fr; }
+.phone-frame .st-testimonials-grid { grid-template-columns: 1fr; }
+.phone-frame .st-form-row    { grid-template-columns: 1fr; }
+.phone-frame .hidden.md\:block { display: none !important; }
+
 @media (max-width: 767px) {
   .st-container   { padding: 0 16px; }
   .st-section     { padding: 56px 16px; }

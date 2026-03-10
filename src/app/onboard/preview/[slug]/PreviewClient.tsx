@@ -654,13 +654,16 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
 
       {/* ── サイト本体 ── */}
       <div style={{ paddingTop: 52, background: viewport === 'iphone' ? '#f3f4f6' : '#fff', minHeight: '100vh' }}>
-        <div style={viewport === 'iphone' ? {
-          maxWidth: 390, margin: '24px auto',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
-          borderRadius: 44,
-          overflow: 'hidden',
-          border: '8px solid #1a1a1a',
-        } : {}}>
+        <div
+          className={viewport === 'iphone' ? 'phone-frame' : ''}
+          style={viewport === 'iphone' ? {
+            maxWidth: 390, margin: '24px auto',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
+            borderRadius: 44,
+            overflow: 'hidden',
+            border: '8px solid #1a1a1a',
+          } : {}}
+        >
           <SiteTemplate
             firmName={firmName}
             prefecture={prefecture}

@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     // ウェルカムメール送信
     const appUrl = process.env.NODE_ENV === 'production'
-      ? 'https://app.coreai-x.com'
+      ? 'https://app.webseisei.com'
       : 'http://localhost:3000'
 
     // レビュー依頼の作成
@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
 
       // 管理者へ通知メール
       await resend.emails.send({
-        from: process.env.RESEND_FROM ?? 'noreply@coreai-x.com',
-        to: process.env.ADMIN_EMAIL ?? 'admin@coreai-x.com',
+        from: process.env.RESEND_FROM ?? 'noreply@webseisei.com',
+        to: process.env.ADMIN_EMAIL ?? 'admin@webseisei.com',
         subject: '【AI集客OS】新規レビュー依頼が届きました',
         html: `
           <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     }
 
     await resend.emails.send({
-      from: process.env.RESEND_FROM ?? 'noreply@coreai-x.com',
+      from: process.env.RESEND_FROM ?? 'noreply@webseisei.com',
       to: email,
       subject: '【AI集客OS】サイトが公開されました',
       html: `

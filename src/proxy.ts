@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { verifySessionToken } from '@/lib/session'
 
-const ROOT_DOMAIN = 'coreai-x.com'
+const ROOT_DOMAIN = 'webseisei.com'
 
 export default async function proxy(request: NextRequest) {
   const hostname = request.headers.get('host') || ''
@@ -23,7 +23,7 @@ export default async function proxy(request: NextRequest) {
     ? hostname.slice(0, -(ROOT_DOMAIN.length + 1))
     : null
 
-  // admin.coreai-x.com
+  // admin.webseisei.com
   if (subdomain === 'admin') {
     // ログインページは認証不要
     if (pathname === '/admin/login') {
@@ -42,7 +42,7 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // app.coreai-x.com
+  // app.webseisei.com
   if (subdomain === 'app') {
     const isPublicPath =
       pathname.startsWith('/login') ||
@@ -70,7 +70,7 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // {slug}.coreai-x.com → 公開サイト
+  // {slug}.webseisei.com → 公開サイト
   if (subdomain && subdomain !== 'www') {
     if (pathname === '/') {
       url.pathname = `/${subdomain}`
@@ -80,7 +80,7 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.rewrite(url)
   }
 
-  // coreai-x.com → LP
+  // webseisei.com → LP
   return NextResponse.next()
 }
 

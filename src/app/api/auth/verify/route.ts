@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   const { name, value, options } = sessionCookieOptions(sessionToken)
 
   const appUrl = process.env.NODE_ENV === 'production'
-    ? 'https://app.coreai-x.com'
+    ? 'https://app.webseisei.com'
     : 'http://localhost:3000'
 
   // そのユーザーのサイトを取得してダッシュボードに直接リダイレクト

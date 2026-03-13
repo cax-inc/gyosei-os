@@ -2,7 +2,7 @@
 
 > バージョン: 1.0
 > 作成日: 2026-03-10
-> 対象システム: gyosei-os（coreai-x.com）
+> 対象システム: gyosei-os（webseisei.com）
 
 ---
 
@@ -13,8 +13,8 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         クライアント (ブラウザ)                        │
-│    coreai-x.com  │  app.coreai-x.com  │  {slug}.coreai-x.com       │
-│    admin.coreai-x.com                                               │
+│    webseisei.com  │  app.webseisei.com  │  {slug}.webseisei.com       │
+│    admin.webseisei.com                                               │
 └────────────┬───────────────┬──────────────────┬─────────────────────┘
              │               │                  │
              ▼               ▼                  ▼
@@ -24,7 +24,7 @@
 │                                                                      │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
 │  │  /onboard    │  │  /dashboard  │  │  /[slug] (公開サイト)     │  │
-│  │  /login      │  │  /admin      │  │  /{slug}.coreai-x.com    │  │
+│  │  /login      │  │  /admin      │  │  /{slug}.webseisei.com    │  │
 │  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────────┘  │
 │         │                 │                      │                   │
 │  ┌──────▼─────────────────▼──────────────────────▼───────────────┐  │
@@ -48,10 +48,10 @@
 ```
 リクエスト Host ヘッダー       →  Next.js ルート
 ──────────────────────────────────────────────────
-coreai-x.com                  →  /app/page.tsx（LP）
-app.coreai-x.com              →  /app/* （ユーザー管理画面）
-admin.coreai-x.com            →  /app/admin/* （管理画面）
-{slug}.coreai-x.com           →  /app/[slug]/page.tsx（公開サイト）
+webseisei.com                  →  /app/page.tsx（LP）
+app.webseisei.com              →  /app/* （ユーザー管理画面）
+admin.webseisei.com            →  /app/admin/* （管理画面）
+{slug}.webseisei.com           →  /app/[slug]/page.tsx（公開サイト）
 localhost:3000/{slug}          →  /app/[slug]/page.tsx（開発環境）
 ```
 
@@ -88,9 +88,9 @@ gyosei-os/
 │   ├── auth.ts                   # NextAuth.js 管理者認証設定
 │   ├── app/
 │   │   ├── layout.tsx            # ルートレイアウト
-│   │   ├── page.tsx              # LP（coreai-x.com）
+│   │   ├── page.tsx              # LP（webseisei.com）
 │   │   ├── [slug]/
-│   │   │   └── page.tsx          # 公開サイト（{slug}.coreai-x.com）
+│   │   │   └── page.tsx          # 公開サイト（{slug}.webseisei.com）
 │   │   ├── onboard/
 │   │   │   ├── page.tsx          # オンボーディング LP
 │   │   │   ├── questions/page.tsx # 質問ウィザード
@@ -583,7 +583,7 @@ type SiteContent = {
 
 | 環境 | ブランチ | URL | DB |
 |------|---------|-----|-----|
-| 本番 | main | coreai-x.com / *.coreai-x.com | Neon 本番ブランチ |
+| 本番 | main | webseisei.com / *.webseisei.com | Neon 本番ブランチ |
 | 開発 | feature/* | localhost:3000 | Neon 開発ブランチ または ローカル |
 
 ### 8.2 デプロイ手順
@@ -610,7 +610,7 @@ type SiteContent = {
 | `DIRECT_URL` | Neon 直接接続文字列（migrate用） |
 | `ANTHROPIC_API_KEY` | Claude API キー |
 | `RESEND_API_KEY` | Resend API キー |
-| `RESEND_FROM` | 送信元メールアドレス（例: noreply@coreai-x.com） |
+| `RESEND_FROM` | 送信元メールアドレス（例: noreply@webseisei.com） |
 | `AUTH_SECRET` | HMAC-SHA256 セッション署名シークレット（32バイト以上） |
 | `ADMIN_EMAIL` | 管理者メールアドレス |
 | `ADMIN_PASSWORD` | 管理者パスワード（bcrypt ハッシュ推奨） |
@@ -619,12 +619,12 @@ type SiteContent = {
 
 | ドメイン | Vercel プロジェクト | 設定状況 |
 |---------|-----------------|---------|
-| `coreai-x.com` | gyosei-os | 設定済み |
-| `*.coreai-x.com` | gyosei-os | 設定済み（ワイルドカード） |
-| `app.coreai-x.com` | gyosei-os | 設定済み |
-| `admin.coreai-x.com` | gyosei-os | gyosei-os への付け替えが必要 |
+| `webseisei.com` | gyosei-os | 設定済み |
+| `*.webseisei.com` | gyosei-os | 設定済み（ワイルドカード） |
+| `app.webseisei.com` | gyosei-os | 設定済み |
+| `admin.webseisei.com` | gyosei-os | gyosei-os への付け替えが必要 |
 
-さくらインターネット DNS でワイルドカード CNAME（`*.coreai-x.com` → Vercel）設定済み。
+さくらインターネット DNS でワイルドカード CNAME（`*.webseisei.com` → Vercel）設定済み。
 
 ### 8.5 開発環境セットアップ
 
@@ -651,17 +651,17 @@ npm run dev
 ```typescript
 // 公開サイトURL
 siteUrl(slug: string): string
-// 本番: https://{slug}.coreai-x.com
+// 本番: https://{slug}.webseisei.com
 // 開発: /{slug}
 
 // ユーザー管理画面URL
 appUrl(path: string): string
-// 本番: https://app.coreai-x.com{path}
+// 本番: https://app.webseisei.com{path}
 // 開発: {path}
 
 // 管理画面URL
 adminUrl(path: string): string
-// 本番: https://admin.coreai-x.com{path}
+// 本番: https://admin.webseisei.com{path}
 // 開発: /admin{path}
 ```
 

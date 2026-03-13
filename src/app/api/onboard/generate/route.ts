@@ -116,16 +116,12 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // ユーザー提供のお客様の声で上書き（AIの偽の声は使わない）
-  if (validInput.userTestimonials && validInput.userTestimonials.length > 0) {
-    siteContent.testimonials = validInput.userTestimonials.map((t) => ({
-      name: t.name,
-      role: 'お客様',
-      content: t.content,
-    }))
-  } else {
-    siteContent.testimonials = []
-  }
+  // お客様の声はユーザー入力のみ使用。未入力時は空にする（AI生成の架空の声は使わない）
+  siteContent.testimonials = (validInput.userTestimonials ?? []).map((t) => ({
+    name: t.name,
+    role: 'お客様',
+    content: t.content,
+  }))
 
   // ---- ④ DB保存（以降の表示はここから読む） ----
 

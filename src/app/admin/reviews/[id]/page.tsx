@@ -14,7 +14,7 @@ export default async function ReviewDetailPage({ params }: { params: Promise<{ i
   const reviewers = await prisma.reviewer.findMany({ where: { active: true }, orderBy: { createdAt: 'asc' } })
 
   const sitePreviewUrl = process.env.NODE_ENV === 'production'
-    ? `https://app.coreai-x.com/onboard/preview/${review.site.slug}`
+    ? `https://app.webseisei.com/onboard/preview/${review.site.slug}`
     : `http://localhost:3000/onboard/preview/${review.site.slug}`
 
   return (

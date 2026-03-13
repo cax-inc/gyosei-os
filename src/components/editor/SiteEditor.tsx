@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { SiteTemplate } from '@/components/editor/SiteTemplate'
+import { TemplateSelectorPanel } from '@/components/editor/TemplateSelectorPanel'
+import type { SiteTemplate as SiteTheme } from '@/components/editor/TemplateSelectorPanel'
+import { SeiSeiChat } from '@/components/editor/SeiSeiChat'
 import { FreeCanvas, defaultElement, CANVAS_WIDTH } from '@/components/marketing-os/canvas/FreeCanvas'
 import {
   siteContentToElements,
@@ -60,6 +63,11 @@ export function SiteEditor({ slug, firmName, prefecture, initialContent, initial
   // Undo/Redo 履歴スタック
   const [history, setHistory] = useState<CanvasElement[][]>([initialElements])
   const [historyIdx, setHistoryIdx] = useState(0)
+
+  // テンプレート・チャット
+  const [showTemplatePanel, setShowTemplatePanel] = useState(false)
+  const [activeTheme, setActiveTheme] = useState<SiteTheme | undefined>(undefined)
+  const [showChat, setShowChat] = useState(false)
 
   // ── モード切替 ──
 
@@ -255,6 +263,24 @@ export function SiteEditor({ slug, firmName, prefecture, initialContent, initial
         )}
 
         <div className="ml-auto flex items-center gap-2">
+          {/* デザイン選択 */}
+          <button
+            onClick={() => setShowTemplatePanel(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 border border-gray-200 transition-colors"
+          >
+            🎨 デザイン選択
+          </button>
+
+          {/* AIチャット */}
+          <button
+            onClick={() => setShowChat(v => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${showChat ? 'bg-indigo-600 text-white border-indigo-600' : 'text-gray-700 hover:bg-gray-100 border-gray-200'}`}
+          >
+            💬 AIチャット
+          </button>
+
+          <div className="w-px h-5 bg-gray-200" />
+
           {isDirty && (
             <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
               未保存
@@ -295,6 +321,7 @@ export function SiteEditor({ slug, firmName, prefecture, initialContent, initial
                 content={content}
                 editable
                 onUpdate={handleContentUpdate}
+                theme={activeTheme}
               />
             </div>
           </div>
@@ -305,6 +332,21 @@ export function SiteEditor({ slug, firmName, prefecture, initialContent, initial
           </div>
         )}
       </div>
+
+      {/* ── テンプレートパネル ── */}
+      <TemplateSelectorPanel
+        isOpen={showTemplatePanel}
+        onClose={() => setShowTemplatePanel(false)}
+        currentTemplateId={activeTheme?.id}
+        onApply={(t) => { setActiveTheme(t) }}
+      />
+
+      {/* ── AIチャット ── */}
+      <SeiSeiChat
+        isOpen={showChat}
+        onClose={() => setShowChat(false)}
+        slug={slug}
+      />
 
       {/* ── ヒント（fixed bottom） ── */}
       <div className="fixed bottom-0 left-0 right-0 h-7 bg-white border-t border-gray-100 flex items-center px-4 gap-4 z-50">

@@ -1,7 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import Cropper from 'react-easy-crop'
+import type { Area } from 'react-easy-crop'
 import type { SiteContent, PricingItem, AreaContent, TestimonialItem } from '@/lib/ai-site/types'
+import type { SiteTemplate as SiteTheme } from '@/components/editor/TemplateSelectorPanel'
 
 // ─── InlineEditable テキスト ──────────────────────────────────────────────────
 
@@ -46,19 +49,119 @@ function ET({ as: tag = 'span', value, onChange, className = '', style, multi = 
   )
 }
 
+// ─── 画像クロップ helper ──────────────────────────────────────────────────────
+
+async function getCroppedBlob(imageSrc: string, pixelCrop: Area): Promise<Blob> {
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image()
+    i.onload = () => resolve(i)
+    i.onerror = reject
+    i.src = imageSrc
+  })
+  const canvas = document.createElement('canvas')
+  canvas.width  = pixelCrop.width
+  canvas.height = pixelCrop.height
+  const ctx = canvas.getContext('2d')!
+  ctx.drawImage(img, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height)
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/jpeg', 0.92)
+  )
+}
+
+// ─── クロップモーダル ────────────────────────────────────────────────────────
+
+function CropModal({ imageSrc, onConfirm, onCancel }: {
+  imageSrc: string
+  onConfirm: (croppedBlob: Blob) => void
+  onCancel: () => void
+}) {
+  const [crop, setCrop]           = useState({ x: 0, y: 0 })
+  const [zoom, setZoom]           = useState(1)
+  const [croppedArea, setCroppedArea] = useState<Area | null>(null)
+  const [confirming, setConfirming]   = useState(false)
+
+  const onCropComplete = useCallback((_: Area, areaPixels: Area) => {
+    setCroppedArea(areaPixels)
+  }, [])
+
+  const handleConfirm = async () => {
+    if (!croppedArea) return
+    setConfirming(true)
+    try {
+      const blob = await getCroppedBlob(imageSrc, croppedArea)
+      onConfirm(blob)
+    } catch { alert('切り抜きに失敗しました') }
+    finally { setConfirming(false) }
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 300,
+      background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{ width: '90vw', maxWidth: 480, background: '#1f2937', borderRadius: 20, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
+        {/* タイトル */}
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <p style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>範囲を選択</p>
+          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, marginTop: 2 }}>ドラッグで移動、ピンチまたはスクロールで拡大</p>
+        </div>
+
+        {/* クロッパー */}
+        <div style={{ position: 'relative', width: '100%', height: 360, background: '#111' }}>
+          <Cropper
+            image={imageSrc}
+            crop={crop}
+            zoom={zoom}
+            aspect={9 / 11}
+            onCropChange={setCrop}
+            onZoomChange={setZoom}
+            onCropComplete={onCropComplete}
+          />
+        </div>
+
+        {/* ズームスライダー */}
+        <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>縮小</span>
+          <input
+            type="range" min={1} max={3} step={0.01}
+            value={zoom}
+            onChange={e => setZoom(Number(e.target.value))}
+            style={{ flex: 1, accentColor: '#6366f1' }}
+          />
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>拡大</span>
+        </div>
+
+        {/* ボタン */}
+        <div style={{ padding: '0 20px 20px', display: 'flex', gap: 10 }}>
+          <button onClick={onCancel} style={{
+            flex: 1, padding: '11px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)',
+            background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer',
+          }}>キャンセル</button>
+          <button onClick={handleConfirm} disabled={confirming} style={{
+            flex: 2, padding: '11px', borderRadius: 10, border: 'none',
+            background: '#6366f1', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer',
+          }}>{confirming ? '処理中…' : 'この範囲で決定'}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── ProfilePhoto アップロード ────────────────────────────────────────────────
 
 function ProfilePhotoUpload({ src, editable, onChange }: {
   src?: string; editable: boolean; onChange: (url: string) => void
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
-  const [uploading, setUploading] = useState(false)
+  const [uploading, setUploading]     = useState(false)
+  const [cropSrc, setCropSrc]         = useState<string | null>(null)
 
-  const upload = async (file: File) => {
+  const upload = async (blob: Blob) => {
     setUploading(true)
     try {
       const form = new FormData()
-      form.append('file', file)
+      form.append('file', blob, 'photo.jpg')
       const res = await fetch('/api/marketing-os/upload', { method: 'POST', body: form })
       if (!res.ok) throw new Error()
       const { url } = await res.json()
@@ -67,40 +170,58 @@ function ProfilePhotoUpload({ src, editable, onChange }: {
     finally { setUploading(false) }
   }
 
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    e.target.value = ''
+    const reader = new FileReader()
+    reader.onload = () => setCropSrc(reader.result as string)
+    reader.readAsDataURL(f)
+  }
+
   return (
-    <div
-      className={`relative overflow-hidden shrink-0 st-about-photo ${editable ? 'group cursor-pointer' : ''}`}
-      style={{ width: 180, height: 220, borderRadius: 16 }}
-      onClick={() => editable && fileRef.current?.click()}
-    >
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="プロフィール写真" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-      ) : (
-        <div style={{
-          width: '100%', height: '100%',
-          background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
-        }}>
-          <span style={{ fontSize: 52 }}>👨‍💼</span>
-          {editable && <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 600 }}>写真を追加</span>}
-        </div>
+    <>
+      {cropSrc && (
+        <CropModal
+          imageSrc={cropSrc}
+          onConfirm={async (blob) => { setCropSrc(null); await upload(blob) }}
+          onCancel={() => setCropSrc(null)}
+        />
       )}
-      {editable && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(0,0,0,0.45)',
-          opacity: 0, transition: 'opacity 0.2s',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }} className="group-hover:opacity-100">
-          <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>
-            {uploading ? 'アップロード中…' : src ? '写真を変更' : '写真を追加'}
-          </span>
-        </div>
-      )}
-      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
-        onChange={e => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = '' }} />
-    </div>
+
+      <div
+        className={`relative overflow-hidden shrink-0 st-about-photo ${editable ? 'group cursor-pointer' : ''}`}
+        style={{ width: 180, height: 220, borderRadius: 16 }}
+        onClick={() => editable && fileRef.current?.click()}
+      >
+        {src ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt="プロフィール写真" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ) : (
+          <div style={{
+            width: '100%', height: '100%',
+            background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}>
+            <span style={{ fontSize: 52 }}>👨‍💼</span>
+            {editable && <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 600 }}>写真を追加</span>}
+          </div>
+        )}
+        {editable && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'rgba(0,0,0,0.45)',
+            opacity: 0, transition: 'opacity 0.2s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }} className="group-hover:opacity-100">
+            <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>
+              {uploading ? 'アップロード中…' : src ? '写真を変更' : '写真を追加'}
+            </span>
+          </div>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+      </div>
+    </>
   )
 }
 
@@ -266,12 +387,13 @@ interface SiteTemplateProps {
   content: SiteContent
   editable?: boolean
   onUpdate?: (c: SiteContent) => void
+  theme?: SiteTheme
 }
 
 // ─── SiteTemplate ─────────────────────────────────────────────────────────────
 
 export function SiteTemplate({
-  firmName, prefecture, siteSlug, content, editable = false, onUpdate,
+  firmName, prefecture, siteSlug, content, editable = false, onUpdate, theme,
 }: SiteTemplateProps) {
   const { hero, services, profile, faq, cta } = content
   const pricing = content.pricing ?? DEFAULT_PRICING
@@ -344,19 +466,32 @@ export function SiteTemplate({
     cb?.({ ...content, pricing: pricing.filter((_, idx) => idx !== i) })
   }
 
+  // ── テーマカラー ─────────────────────────────────────────────────────────────
+  const th = {
+    primary:    theme?.colors.primary    ?? '#6366f1',
+    accent:     theme?.colors.accent     ?? '#6366f1',
+    bg:         theme?.colors.bg         ?? '#ffffff',
+    surface:    theme?.colors.surface    ?? '#f9fafb',
+    text:       theme?.colors.text       ?? '#111827',
+    sub:        theme?.colors.sub        ?? '#6b7280',
+    fontFamily: theme?.style.fontFamily  ?? "'Inter', 'Helvetica Neue', Arial, 'Hiragino Sans', 'Yu Gothic', sans-serif",
+    radius:     theme?.style.borderRadius ?? '100px',
+    headerStyle: theme?.style.headerStyle ?? 'minimal',
+  }
+
   // ── スタイル定数 ────────────────────────────────────────────────────────────
   const sectionLabel: React.CSSProperties = {
     fontSize: 11, fontWeight: 700, letterSpacing: '2.5px', textTransform: 'uppercase' as const,
-    color: '#6366f1', marginBottom: 12, display: 'block',
+    color: th.primary, marginBottom: 12, display: 'block',
   }
   const sectionTitle: React.CSSProperties = {
-    fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.1, color: '#111827',
+    fontSize: 'clamp(24px, 5vw, 40px)', fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.1, color: th.text,
   }
   const sectionTitleClass = 'st-section-title'
   const container: React.CSSProperties = { maxWidth: 1100, margin: '0 auto' }
 
   return (
-    <div style={{ fontFamily: "'Inter', 'Helvetica Neue', Arial, 'Hiragino Sans', 'Yu Gothic', sans-serif", color: '#111827', background: '#fff' }}>
+    <div style={{ fontFamily: th.fontFamily, color: th.text, background: th.bg }}>
 
       {/* ── Header ── */}
       <header style={{
@@ -370,7 +505,7 @@ export function SiteTemplate({
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <div style={{
               width: 34, height: 34, borderRadius: 8,
-              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+              background: th.primary,
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
               <span style={{ color: '#fff', fontSize: 13, fontWeight: 800 }}>法</span>
@@ -392,8 +527,8 @@ export function SiteTemplate({
             ))}
             <a href="#contact" style={{
               fontSize: 13, fontWeight: 700, padding: '8px 18px', borderRadius: 100,
-              background: '#6366f1', color: '#fff', textDecoration: 'none',
-              boxShadow: '0 2px 10px rgba(99,102,241,0.25)', whiteSpace: 'nowrap',
+              background: th.primary, color: '#fff', textDecoration: 'none',
+              whiteSpace: 'nowrap',
             }}>
               無料相談
             </a>
@@ -403,7 +538,7 @@ export function SiteTemplate({
 
       {/* ── Hero ── */}
       <section style={{
-        background: 'linear-gradient(150deg, #f0f4ff 0%, #fafffe 50%, #fdf6ff 100%)',
+        background: th.bg,
         position: 'relative', overflow: 'hidden',
       }}>
         <div style={{
@@ -423,8 +558,8 @@ export function SiteTemplate({
           <div style={{ marginBottom: 24 }}>
             <ET as="span" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined} style={{
               display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
-              color: '#6366f1', background: 'rgba(99,102,241,0.08)',
-              padding: '5px 14px', borderRadius: 100, border: '1px solid rgba(99,102,241,0.15)',
+              color: th.primary, background: `${th.primary}14`,
+              padding: '5px 14px', borderRadius: 100, border: `1px solid ${th.primary}30`,
             }} />
           </div>
 
@@ -445,10 +580,9 @@ export function SiteTemplate({
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }} className="st-hero-btns">
             <a href="#contact" style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: '#6366f1', color: '#fff', fontWeight: 700,
-              padding: '14px 28px', borderRadius: 100, fontSize: 15,
+              background: th.primary, color: '#fff', fontWeight: 700,
+              padding: '14px 28px', borderRadius: th.radius, fontSize: 15,
               textDecoration: 'none', letterSpacing: '-0.3px',
-              boxShadow: '0 4px 20px rgba(99,102,241,0.28)',
             }}>
               <ET value={hero.ctaText} onChange={v => upHero('ctaText', v)} style={{ pointerEvents: 'none' } as React.CSSProperties} />
               <span>→</span>
@@ -516,7 +650,7 @@ export function SiteTemplate({
             <div>
               <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 4, letterSpacing: '-0.5px', color: '#111827' }}>{firmName}</h3>
               <ET as="p" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined}
-                style={{ fontSize: 13, color: '#6366f1', fontWeight: 600, marginBottom: 20, letterSpacing: '0.3px', display: 'block' } as React.CSSProperties} />
+                style={{ fontSize: 13, color: th.primary, fontWeight: 600, marginBottom: 20, letterSpacing: '0.3px', display: 'block' } as React.CSSProperties} />
               <ET as="p" value={profile.body} onChange={v => upProfile('body', v)} multi
                 style={{ fontSize: 15, color: '#374151', lineHeight: 1.95, display: 'block', marginBottom: 24 } as React.CSSProperties}
               />
@@ -524,8 +658,8 @@ export function SiteTemplate({
                 {profile.strengths.map((s, i) => (
                   <span key={i} style={{
                     display: 'inline-flex', alignItems: 'center', gap: 4,
-                    fontSize: 12, fontWeight: 600, color: '#6366f1',
-                    background: 'rgba(99,102,241,0.07)', border: '1px solid rgba(99,102,241,0.15)',
+                    fontSize: 12, fontWeight: 600, color: th.primary,
+                    background: `${th.primary}12`, border: `1px solid ${th.primary}25`,
                     padding: '5px 12px', borderRadius: 100,
                   }}>
                     {s}
@@ -577,7 +711,7 @@ export function SiteTemplate({
                   }}>
                     <span style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af' }}>料金目安</span>
                     <ET as="span" value={svc.price} onChange={v => upService(i, 'price', v)}
-                      style={{ fontSize: 14, fontWeight: 700, color: '#6366f1' } as React.CSSProperties} />
+                      style={{ fontSize: 14, fontWeight: 700, color: th.primary } as React.CSSProperties} />
                   </div>
                 )}
               </div>
@@ -597,11 +731,11 @@ export function SiteTemplate({
           <div className="st-pricing-grid">
             {pricing.map((plan, i) => (
               <div key={i} style={{
-                background: i === 1 ? '#6366f1' : '#f9fafb',
+                background: i === 1 ? th.primary : th.surface,
                 borderRadius: 20, padding: '36px 32px',
                 border: i === 1 ? 'none' : '1px solid #e5e7eb',
                 position: 'relative',
-                boxShadow: i === 1 ? '0 8px 32px rgba(99,102,241,0.25)' : '0 1px 4px rgba(0,0,0,0.04)',
+                boxShadow: i === 1 ? `0 8px 32px ${th.primary}40` : '0 1px 4px rgba(0,0,0,0.04)',
               }}>
                 {editable && (
                   <button onClick={() => upPricingDelete(i)} style={{
@@ -623,7 +757,7 @@ export function SiteTemplate({
                 <ET as="h3" value={plan.name} onChange={v => upPricing(i, 'name', v)}
                   style={{ fontSize: 17, fontWeight: 700, marginBottom: 8, display: 'block', color: i === 1 ? '#fff' : '#111827' } as React.CSSProperties} />
                 <ET as="div" value={plan.price} onChange={v => upPricing(i, 'price', v)}
-                  style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-1px', marginBottom: 24, display: 'block', color: i === 1 ? '#fff' : '#6366f1' } as React.CSSProperties} />
+                  style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-1px', marginBottom: 24, display: 'block', color: i === 1 ? '#fff' : th.primary } as React.CSSProperties} />
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0 0', display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {plan.features.map((feat, fi) => (
                     <li key={fi} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -639,7 +773,7 @@ export function SiteTemplate({
           <div style={{ textAlign: 'center' }}>
             <a href="#contact" style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
-              border: '2px solid #6366f1', color: '#6366f1', fontWeight: 700,
+              border: `2px solid ${th.primary}`, color: th.primary, fontWeight: 700,
               padding: '13px 32px', borderRadius: 100, fontSize: 15, textDecoration: 'none',
             }}>
               <ET value={pricingCtaText} onChange={editable ? upPricingCtaText : undefined} style={{ pointerEvents: 'none' } as React.CSSProperties} />
@@ -769,9 +903,9 @@ export function SiteTemplate({
           />
           <a href="#contact" style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: '#6366f1', color: '#fff', fontWeight: 700,
-            padding: '16px 36px', borderRadius: 100, fontSize: 16, textDecoration: 'none',
-            letterSpacing: '-0.3px', boxShadow: '0 4px 24px rgba(99,102,241,0.3)',
+            background: th.primary, color: '#fff', fontWeight: 700,
+            padding: '16px 36px', borderRadius: th.radius, fontSize: 16, textDecoration: 'none',
+            letterSpacing: '-0.3px',
           }}>
             <ET value={cta.ctaText} onChange={v => upCta('ctaText', v)} style={{ pointerEvents: 'none' } as React.CSSProperties} />
             <span style={{ fontSize: 20 }}>→</span>
@@ -794,7 +928,7 @@ export function SiteTemplate({
             }}>
               <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 8 }}>お問い合わせフォームは公開ページで動作します</p>
               <a href={`/${siteSlug}`} target="_blank" rel="noopener noreferrer"
-                style={{ fontSize: 13, color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
+                style={{ fontSize: 13, color: th.primary, textDecoration: 'none', fontWeight: 600 }}>
                 公開ページで確認 →
               </a>
             </div>
@@ -809,7 +943,7 @@ export function SiteTemplate({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
           <div style={{
             width: 28, height: 28, borderRadius: 6,
-            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            background: th.primary,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>法</span>
@@ -824,7 +958,7 @@ export function SiteTemplate({
         </div>
         <p style={{ fontSize: 11, color: '#d1d5db' }}>© {new Date().getFullYear()} {firmName}. All rights reserved.</p>
         <p style={{ fontSize: 11, color: '#e5e7eb', marginTop: 12 }}>
-          <a href="https://coreai-x.com" target="_blank" rel="noopener noreferrer"
+          <a href="https://webseisei.com" target="_blank" rel="noopener noreferrer"
             style={{ color: '#d1d5db', textDecoration: 'none' }}>
             Powered by AI集客OS
           </a>

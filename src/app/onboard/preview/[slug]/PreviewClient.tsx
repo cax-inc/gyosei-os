@@ -2,18 +2,23 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { SiteTemplate } from '@/components/editor/SiteTemplate'
+import { TemplateSelectorPanel } from '@/components/editor/TemplateSelectorPanel'
+import type { SiteTemplate as SiteTheme } from '@/components/editor/TemplateSelectorPanel'
+import { SeiSeiChat } from '@/components/editor/SeiSeiChat'
 import type { SiteContent } from '@/lib/ai-site/types'
 
 // ── プラン選択モーダル ─────────────────────────────────────────────────────────
 
 function PlanModal({
   onClose,
-  onSelectFree,
+  onSelectMonthly,
   onSelectReview,
+  onSelectCustom,
 }: {
   onClose: () => void
-  onSelectFree: () => void
+  onSelectMonthly: () => void
   onSelectReview: () => void
+  onSelectCustom: () => void
 }) {
   return (
     <div
@@ -27,13 +32,12 @@ function PlanModal({
     >
       <div
         style={{
-          background: '#f9fafb', borderRadius: 24, padding: 'clamp(24px, 4vw, 48px) clamp(16px, 4vw, 40px)', maxWidth: 960, width: '100%',
+          background: '#f9fafb', borderRadius: 24, padding: 'clamp(24px, 4vw, 48px) clamp(16px, 4vw, 40px)', maxWidth: 1040, width: '100%',
           boxShadow: '0 24px 80px rgba(0,0,0,0.25)',
           position: 'relative',
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* 閉じるボタン */}
         <button onClick={onClose} style={{
           position: 'absolute', top: 16, right: 16,
           background: '#e5e7eb', border: 'none', borderRadius: 100,
@@ -42,65 +46,44 @@ function PlanModal({
         }}>×</button>
 
         <h2 style={{ fontSize: 'clamp(18px, 4vw, 24px)', fontWeight: 800, color: '#111827', marginBottom: 8, letterSpacing: '-0.6px', textAlign: 'center' }}>
-          公開プランを選んでください
+          サイトを公開しましょう
         </h2>
         <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 36, textAlign: 'center' }}>
-          今すぐ無料で公開することも、プロに確認してもらうこともできます
+          今日申し込みで初月無料。いつでも解約できます。
         </p>
 
-        {/* カード群 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20, marginBottom: 28 }}>
 
-          {/* Plan 1: 無料 */}
-          <div style={{
-            background: '#fff', borderRadius: 20, padding: 28,
-            border: '1px solid #e5e7eb',
-            display: 'flex', flexDirection: 'column', gap: 12,
-          }}>
-            <div>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>プラン 1</p>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 4 }}>このまま公開</h3>
-              <p style={{ fontSize: 26, fontWeight: 800, color: '#111827' }}>無料</p>
-            </div>
-            <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>今すぐサイトを公開できます</p>
-            <button
-              onClick={onSelectFree}
-              style={{
-                marginTop: 'auto', padding: '12px', borderRadius: 10, border: '1px solid #d1d5db',
-                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-              }}
-            >
-              このまま公開する
-            </button>
-          </div>
-
-          {/* Plan 2: プロに確認 */}
+          {/* Plan 1: 月額プラン */}
           <div style={{
             background: '#fff', borderRadius: 20, padding: 28,
             border: '2px solid #6366f1',
             display: 'flex', flexDirection: 'column', gap: 12,
             position: 'relative',
           }}>
-            {/* 人気バッジ */}
             <span style={{
               position: 'absolute', top: -12, left: 20,
-              background: '#f59e0b', color: '#fff',
+              background: '#6366f1', color: '#fff',
               fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 100,
               letterSpacing: '0.5px',
-            }}>★ おすすめ</span>
+            }}>🎉 初月無料</span>
 
             <div>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#6366f1', marginBottom: 4 }}>プラン 2</p>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 4 }}>プロに確認してもらう</h3>
-              <p style={{ fontSize: 26, fontWeight: 800, color: '#111827' }}>¥100,000</p>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 8 }}>サイト公開・運用プラン</h3>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 36, fontWeight: 800, color: '#111827', letterSpacing: '-1px' }}>¥2,980</span>
+                <span style={{ fontSize: 14, color: '#6b7280' }}>/月（税込）</span>
+              </div>
+              <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>年間 ¥35,760（一括払い）</p>
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
-                '現役エンジニアによる技術確認',
-                'フォーム・メール動作確認',
-                'スマホ・PC表示確認',
-                '独自ドメイン設定（1年分含む）',
-                '1年間サポート保証',
+                'AIが生成したサイトをそのまま公開',
+                'テキスト・写真をいつでも編集',
+                '問い合わせフォーム付き',
+                '問い合わせをメールで即時通知',
+                'AIによる自動返信メール',
+                'SSL・サーバー代込み',
               ].map(item => (
                 <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151' }}>
                   <span style={{ color: '#6366f1', fontWeight: 700 }}>✓</span> {item}
@@ -108,42 +91,104 @@ function PlanModal({
               ))}
             </ul>
             <button
-              onClick={onSelectReview}
+              onClick={onSelectMonthly}
               style={{
-                marginTop: 'auto', padding: '12px', borderRadius: 10, border: 'none',
-                background: '#6366f1', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                marginTop: 'auto', padding: '14px', borderRadius: 10, border: 'none',
+                background: '#6366f1', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer',
               }}
             >
-              依頼する →
+              申し込む →
             </button>
           </div>
 
-          {/* Plan 3: プロに制作依頼 */}
+          {/* Plan 2: プロ確認（おすすめ） */}
           <div style={{
             background: '#fff', borderRadius: 20, padding: 28,
-            border: '1px solid #e5e7eb',
+            border: '2px solid #f59e0b',
             display: 'flex', flexDirection: 'column', gap: 12,
+            position: 'relative',
           }}>
+            <span style={{
+              position: 'absolute', top: -12, left: 20,
+              background: '#f59e0b', color: '#fff',
+              fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 100,
+              letterSpacing: '0.5px',
+            }}>⭐ おすすめ</span>
+
             <div>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>プラン 3</p>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 4 }}>プロに制作依頼</h3>
-              <p style={{ fontSize: 26, fontWeight: 800, color: '#111827' }}>¥500,000〜</p>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 8 }}>プロ確認オプション</h3>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 36, fontWeight: 800, color: '#111827', letterSpacing: '-1px' }}>¥50,000</span>
+                <span style={{ fontSize: 14, color: '#6b7280' }}>（一括）</span>
+              </div>
+              <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>2名ダブルチェックは ¥100,000</p>
             </div>
-            <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>一からプロが制作します</p>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                '月額プランの内容すべて込み',
+                '現役エンジニアによる技術確認',
+                'フォーム・メール動作確認',
+                '独自ドメイン設定（1年分含む）',
+                '1年間サポート保証',
+              ].map(item => (
+                <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#374151' }}>
+                  <span style={{ color: '#f59e0b', fontWeight: 700 }}>✓</span> {item}
+                </li>
+              ))}
+            </ul>
             <button
-              onClick={() => alert('準備中です。お問い合わせください。')}
+              onClick={onSelectReview}
               style={{
-                marginTop: 'auto', padding: '12px', borderRadius: 10, border: '1px solid #d1d5db',
-                background: '#fff', color: '#374151', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                marginTop: 'auto', padding: '14px', borderRadius: 10, border: 'none',
+                background: '#f59e0b', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer',
               }}
             >
-              相談する →
+              プロに依頼する →
+            </button>
+          </div>
+
+          {/* Plan 3: 完全オーダーメイド */}
+          <div style={{
+            background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', borderRadius: 20, padding: 28,
+            border: '2px solid #4338ca',
+            display: 'flex', flexDirection: 'column', gap: 12,
+            position: 'relative',
+          }}>
+            <div>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 8 }}>完全オーダーメイド</h3>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 36, fontWeight: 800, color: '#fff', letterSpacing: '-1px' }}>¥500,000</span>
+                <span style={{ fontSize: 14, color: '#a5b4fc' }}>〜（一括）</span>
+              </div>
+              <p style={{ fontSize: 12, color: '#818cf8', marginTop: 4 }}>要件・規模により個別お見積り</p>
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                'プロ確認プランの内容すべて込み',
+                'サイト設計・構成からお任せ',
+                'AIチャット機能をサイト内に実装',
+                '予約・決済など独自機能の設計',
+                '専任担当による伴走サポート',
+              ].map(item => (
+                <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#e0e7ff' }}>
+                  <span style={{ color: '#818cf8', fontWeight: 700 }}>✓</span> {item}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={onSelectCustom}
+              style={{
+                marginTop: 'auto', padding: '14px', borderRadius: 10, border: '1.5px solid #6366f1',
+                background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              相談する（無料） →
             </button>
           </div>
         </div>
 
         <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center', lineHeight: 1.7 }}>
-          ※ AIと最新技術（Next.js）による効率化により、従来の制作会社と比較して大幅なコスト削減を実現しています。
+          ※ 申し込み後、担当よりメールにてご案内します。いつでもキャンセル可能です。
         </p>
       </div>
     </div>
@@ -187,7 +232,7 @@ function ReviewerModal({
       role: '両名によるW確認',
       org: 'より安心・確実なチェック',
       specialty: '',
-      price: '¥100,000',
+      price: '¥100,000（2名分）',
       buttonLabel: '二人に依頼する',
     },
   ]
@@ -293,10 +338,7 @@ function RegisterModal({
     })
 
     if (res.ok) {
-      const appUrl = process.env.NODE_ENV === 'production'
-        ? 'https://app.coreai-x.com'
-        : 'http://localhost:3000'
-      window.location.href = `${appUrl}/dashboard`
+      window.location.href = '/dashboard'
     } else {
       const data = await res.json() as { error?: string }
       setError(data.error ?? 'エラーが発生しました')
@@ -383,8 +425,10 @@ function RegisterModal({
             {loading
               ? '送信中...'
               : plan === 'review'
-              ? '登録してレビューを依頼する →'
-              : '保存してサイトを公開する →'}
+              ? '登録してプロに依頼する →'
+              : plan === 'custom'
+              ? '登録して相談する（無料） →'
+              : '申し込む（初月無料）→'}
           </button>
           <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center' }}>
             パスワード不要。次回からメールアドレスだけでログインできます。
@@ -477,12 +521,15 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
   const [showRegisterModal, setShowRegisterModal] = useState(false)
   const [showPlanModal, setShowPlanModal] = useState(false)
   const [showReviewerModal, setShowReviewerModal] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<'free' | 'review' | 'custom' | null>(null)
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'review' | 'custom' | null>(null)
   const [selectedReviewer, setSelectedReviewer] = useState<string | null>(null)
   const [showToast, setShowToast] = useState(true)
   const [resetting, setResetting] = useState(false)
   const [showGuide, setShowGuide] = useState(false)
   const [viewport, setViewport] = useState<'pc' | 'iphone'>('pc')
+  const [showTemplatePanel, setShowTemplatePanel] = useState(false)
+  const [activeTheme, setActiveTheme] = useState<SiteTheme | undefined>(undefined)
+  const [showChat, setShowChat] = useState(false)
 
   useEffect(() => {
     const key = `guide_shown_${slug}`
@@ -598,6 +645,32 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
 
         {/* 右 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* テンプレートボタン */}
+          <button
+            onClick={() => setShowTemplatePanel(true)}
+            style={{
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.7)', fontSize: 12,
+              padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+            }}
+          >
+            🎨 デザイン
+          </button>
+
+          {/* AIチャットボタン */}
+          <button
+            onClick={() => setShowChat(v => !v)}
+            style={{
+              background: showChat ? 'rgba(96,165,250,0.2)' : 'rgba(255,255,255,0.07)',
+              border: `1px solid ${showChat ? 'rgba(96,165,250,0.5)' : 'rgba(255,255,255,0.15)'}`,
+              color: showChat ? '#93c5fd' : 'rgba(255,255,255,0.7)', fontSize: 12,
+              padding: '6px 12px', borderRadius: 8, cursor: 'pointer',
+            }}
+          >
+            💬 AIチャット
+          </button>
+
           {/* リセットボタン */}
           <button
             onClick={handleReset}
@@ -654,16 +727,43 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
 
       {/* ── サイト本体 ── */}
       <div style={{ paddingTop: 52, background: viewport === 'iphone' ? '#f3f4f6' : '#fff', minHeight: '100vh' }}>
-        <div
-          className={viewport === 'iphone' ? 'phone-frame' : ''}
-          style={viewport === 'iphone' ? {
-            maxWidth: 390, margin: '24px auto',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
-            borderRadius: 44,
-            overflow: 'hidden',
-            border: '8px solid #1a1a1a',
-          } : {}}
-        >
+        {viewport === 'iphone' ? (
+          /* スマホフレーム：実機サイズ固定 + 内部スクロール */
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0 48px' }}>
+            <div style={{
+              width: 390,
+              height: 844,
+              boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+              borderRadius: 44,
+              border: '8px solid #1a1a1a',
+              overflow: 'hidden',
+              position: 'relative',
+              flexShrink: 0,
+            }}>
+              {/* ノッチ */}
+              <div style={{
+                position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                width: 120, height: 28, background: '#1a1a1a', borderRadius: '0 0 18px 18px',
+                zIndex: 10,
+              }} />
+              {/* スクロール可能なコンテンツ領域 */}
+              <div
+                className="phone-frame"
+                style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}
+              >
+                <SiteTemplate
+                  firmName={firmName}
+                  prefecture={prefecture}
+                  siteSlug={slug}
+                  content={content}
+                  editable
+                  onUpdate={handleUpdate}
+                  theme={activeTheme}
+                />
+              </div>
+            </div>
+          </div>
+        ) : (
           <SiteTemplate
             firmName={firmName}
             prefecture={prefecture}
@@ -671,8 +771,9 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
             content={content}
             editable
             onUpdate={handleUpdate}
+            theme={activeTheme}
           />
-        </div>
+        )}
       </div>
 
 
@@ -680,8 +781,8 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
       {showPlanModal && (
         <PlanModal
           onClose={() => setShowPlanModal(false)}
-          onSelectFree={() => {
-            setSelectedPlan('free')
+          onSelectMonthly={() => {
+            setSelectedPlan('monthly')
             setSelectedReviewer(null)
             setShowPlanModal(false)
             setShowRegisterModal(true)
@@ -690,6 +791,12 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
             setSelectedPlan('review')
             setShowPlanModal(false)
             setShowReviewerModal(true)
+          }}
+          onSelectCustom={() => {
+            setSelectedPlan('custom')
+            setSelectedReviewer(null)
+            setShowPlanModal(false)
+            setShowRegisterModal(true)
           }}
         />
       )}
@@ -715,6 +822,21 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
           reviewer={selectedReviewer ?? undefined}
         />
       )}
+
+      {/* ── せいせい君チャット ── */}
+      <SeiSeiChat
+        isOpen={showChat}
+        onClose={() => setShowChat(false)}
+        slug={slug}
+      />
+
+      {/* ── テンプレートパネル ── */}
+      <TemplateSelectorPanel
+        isOpen={showTemplatePanel}
+        onClose={() => setShowTemplatePanel(false)}
+        currentTemplateId={activeTheme?.id}
+        onApply={(t) => { setActiveTheme(t) }}
+      />
 
       {/* ── 生成完了トースト ── */}
       {showToast && (

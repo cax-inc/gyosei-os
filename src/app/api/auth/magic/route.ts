@@ -35,13 +35,13 @@ export async function POST(req: NextRequest) {
 
     // メール送信
     const appUrl = process.env.NODE_ENV === 'production'
-      ? 'https://app.coreai-x.com'
+      ? 'https://app.webseisei.com'
       : 'http://localhost:3000'
 
     const loginUrl = `${appUrl}/api/auth/verify?token=${token}`
 
     await resend.emails.send({
-      from: process.env.RESEND_FROM ?? 'noreply@coreai-x.com',
+      from: process.env.RESEND_FROM ?? 'noreply@webseisei.com',
       to: email,
       subject: '【AI集客OS】ログインリンク',
       html: `

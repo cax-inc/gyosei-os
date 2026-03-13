@@ -1,9 +1,9 @@
-const ROOT_DOMAIN = 'coreai-x.com'
+const ROOT_DOMAIN = 'webseisei.com'
 const IS_PROD = process.env.NODE_ENV === 'production'
 
 /**
  * 公開サイトのURL
- * 本番: https://{slug}.coreai-x.com
+ * 本番: https://{slug}.webseisei.com
  * 開発: http://localhost:3000/{slug}
  */
 export function siteUrl(slug: string): string {
@@ -12,8 +12,8 @@ export function siteUrl(slug: string): string {
 }
 
 /**
- * ユーザー管理画面のURL（app.coreai-x.com）
- * 本番: https://app.coreai-x.com{path}
+ * ユーザー管理画面のURL（app.webseisei.com）
+ * 本番: https://app.webseisei.com{path}
  * 開発: http://localhost:3000{path}
  */
 export function appUrl(path: string = ''): string {
@@ -22,8 +22,8 @@ export function appUrl(path: string = ''): string {
 }
 
 /**
- * 管理者画面のURL（admin.coreai-x.com）
- * 本番: https://admin.coreai-x.com{path}
+ * 管理者画面のURL（admin.webseisei.com）
+ * 本番: https://admin.webseisei.com{path}
  * 開発: http://localhost:3000{path}
  */
 export function adminUrl(path: string = ''): string {

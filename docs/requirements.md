@@ -2,7 +2,7 @@
 
 > バージョン: 1.0
 > 作成日: 2026-03-10
-> 対象システム: gyosei-os（coreai-x.com）
+> 対象システム: gyosei-os（webseisei.com）
 
 ---
 
@@ -49,7 +49,7 @@
 
 ### 2.3 運営者（オーナー）
 
-- `admin.coreai-x.com` を通じてユーザー・レビュー依頼・レビュアーを管理するシステム管理者
+- `admin.webseisei.com` を通じてユーザー・レビュー依頼・レビュアーを管理するシステム管理者
 
 ---
 
@@ -58,7 +58,7 @@
 ### 3.1 初回サイト生成フロー（コアジャーニー）
 
 ```
-[行政書士] がランディングページ（coreai-x.com）を訪問する
+[行政書士] がランディングページ（webseisei.com）を訪問する
     ↓
 「5分で無料作成」ボタンをクリックし /onboard へ遷移する
     ↓
@@ -75,13 +75,13 @@ Claude API がサイトコンテンツを自動生成する（約30秒）
     ↓
 「サイトを公開する」→ プラン選択 → 名前・メールを登録する
     ↓
-サイトが {slug}.coreai-x.com で公開される
+サイトが {slug}.webseisei.com で公開される
 ```
 
 ### 3.2 ログイン・ダッシュボードフロー
 
 ```
-[登録済みユーザー] が app.coreai-x.com/login を開く
+[登録済みユーザー] が app.webseisei.com/login を開く
     ↓
 メールアドレスを入力する
     ↓
@@ -99,7 +99,7 @@ Claude API がサイトコンテンツを自動生成する（約30秒）
 ### 3.3 問い合わせ受信フロー
 
 ```
-[エンドユーザー] が {slug}.coreai-x.com を訪問する
+[エンドユーザー] が {slug}.webseisei.com を訪問する
     ↓
 お問い合わせフォームに名前・メール・電話・メッセージを入力して送信する
     ↓
@@ -119,7 +119,7 @@ Claude API がサイトコンテンツを自動生成する（約30秒）
     ↓
 名前・メールを登録する → ReviewRequest レコードが作成される（status: pending）
     ↓
-[オーナー] が admin.coreai-x.com/reviews で依頼を確認する
+[オーナー] が admin.webseisei.com/reviews で依頼を確認する
     ↓
 レビュアーを担当に割り当て、技術確認後に承認する（status: approved）
     ↓
@@ -206,7 +206,7 @@ Claude API がサイトコンテンツを自動生成する（約30秒）
 | F-46 | 広告管理（プレースホルダー） | 将来 |
 | F-47 | 公開サイトへのリンク | 必須 |
 
-### 4.6 公開サイト（{slug}.coreai-x.com）
+### 4.6 公開サイト（{slug}.webseisei.com）
 
 | ID | 機能 | 優先度 |
 |----|------|--------|
@@ -227,7 +227,7 @@ Claude API がサイトコンテンツを自動生成する（約30秒）
 | F-64 | UTMパラメータの取得・保存 | 推奨 |
 | F-65 | 下書き状態（draft）のサイトはアクセス不可（404） | 必須 |
 
-### 4.7 管理画面（admin.coreai-x.com → /admin）
+### 4.7 管理画面（admin.webseisei.com → /admin）
 
 | ID | 機能 | 優先度 |
 |----|------|--------|
@@ -261,7 +261,7 @@ Claude API がサイトコンテンツを自動生成する（約30秒）
 | 認証 | ユーザー: HMAC-SHA256 JWT（Web Crypto API、Edge Runtime対応）/ 管理者: NextAuth.js + bcrypt |
 | マジックリンク | 有効期間15分、使用後即時無効化 |
 | セッションCookie | httpOnly=true、secure=true（本番）、sameSite=lax |
-| 管理画面アクセス制御 | admin.coreai-x.com / /admin ルートは管理者のみアクセス可 |
+| 管理画面アクセス制御 | admin.webseisei.com / /admin ルートは管理者のみアクセス可 |
 | ユーザーデータアクセス制御 | /dashboard/[slug] は当該サイトのオーナーのみアクセス可（セッション検証） |
 | 環境変数管理 | ANTHROPIC_API_KEY・RESEND_API_KEY・AUTH_SECRET は環境変数で管理、コードにハードコードしない |
 | SQLインジェクション対策 | Prisma ORM の型安全クエリを使用（生のSQL文字列は使用しない） |
@@ -291,7 +291,7 @@ Claude API がサイトコンテンツを自動生成する（約30秒）
 | 項目 | 要件 |
 |------|------|
 | 業種拡張 | 業種はDBの属性で管理し、ドメイン構成は変えずに対応可能 |
-| サブドメイン | ワイルドカードサブドメイン（*.coreai-x.com）で任意スラッグに対応 |
+| サブドメイン | ワイルドカードサブドメイン（*.webseisei.com）で任意スラッグに対応 |
 | AIモデル更新 | generator.ts の model 定数を変更するだけで切替可能 |
 
 ---

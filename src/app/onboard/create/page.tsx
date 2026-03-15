@@ -64,13 +64,6 @@ export default function OnboardCreatePage() {
             AI集客OS for 行政書士
           </span>
 
-          <h1 style={{
-            fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: 800,
-            color: '#1e1b4b', letterSpacing: '-1.5px', lineHeight: 1.15, marginBottom: 16,
-          }}>
-            行政書士専用。はじめてのサイト制作から<br />公開・運用まで伴走。
-          </h1>
-
           <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8 }}>
             あなたの情報を入力するだけ。AIがサイトの構成・文章・デザインを自動生成。<br />
             仕上げは自分の手で、あなただけのサイトに。

@@ -175,6 +175,11 @@ function ProfilePhotoUpload({ src, editable, onChange, siteSlug }: {
     const f = e.target.files?.[0]
     if (!f) return
     e.target.value = ''
+    // スマホではクロップをスキップして直接アップロード
+    if (window.innerWidth < 768) {
+      upload(f)
+      return
+    }
     const reader = new FileReader()
     reader.onload = () => setCropSrc(reader.result as string)
     reader.readAsDataURL(f)

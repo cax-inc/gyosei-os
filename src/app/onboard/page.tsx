@@ -35,12 +35,11 @@ export default function OnboardPage() {
             fontSize: 'clamp(22px, 4vw, 32px)', fontWeight: 800,
             color: '#1e1b4b', letterSpacing: '-1px', lineHeight: 1.3, marginBottom: 24,
           }}>
-            はじめに、<br />ウェブサイトを持つのに必要なもの3つ
+            はじめに
           </h2>
 
           <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8, marginBottom: 36 }}>
-            通常、インターネット上にサイトを公開するには、<strong style={{ color: '#374151' }}>ドメイン（サイトのアドレス）</strong>・<strong style={{ color: '#374151' }}>サーバー（データの置き場所）</strong>・<strong style={{ color: '#374151' }}>表示されるページ</strong>の3つが必要です。<br /><br />
-            通常は業者に依頼するか、それぞれ別々に契約・設定する必要がありますが、このサービスを使えば<strong style={{ color: '#374151' }}>未経験の方でも一括で設定・公開まで完結</strong>できます。
+            サイトを公開するには、<strong style={{ color: '#374151' }}>ドメイン（サイトのアドレス）</strong>・<strong style={{ color: '#374151' }}>サーバー（データの置き場所）</strong>・<strong style={{ color: '#374151' }}>表示させるページ</strong>の3つが必要です。制作業者に依頼するか、個人で制作する場合はそれぞれ別々に契約・設定する必要がありますが、このサービスなら<strong style={{ color: '#374151' }}>未経験の方でも3つまとめて一括で完結</strong>できます。
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 36 }}>

@@ -185,14 +185,8 @@ function ProfilePhotoUpload({ src, editable, onChange, siteSlug }: {
     reader.readAsDataURL(f)
   }
 
-  // スマホでは写真を非表示
-  if (typeof window !== 'undefined' && window.innerWidth < 768 && !src) return null
-  if (typeof window !== 'undefined' && window.innerWidth < 768) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={src} alt="プロフィール写真" style={{ width: 180, height: 220, objectFit: 'cover', borderRadius: 16, display: 'block', flexShrink: 0 }} />
-    )
-  }
+  // 編集モード中かつスマホでは写真を非表示
+  if (editable && typeof window !== 'undefined' && window.innerWidth < 768) return null
 
   return (
     <>

@@ -530,6 +530,11 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
   const [showTemplatePanel, setShowTemplatePanel] = useState(false)
   const [activeTheme, setActiveTheme] = useState<SiteTheme | undefined>(undefined)
   const [showChat, setShowChat] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 768)
+  }, [])
 
   useEffect(() => {
     const key = `guide_shown_${slug}`
@@ -726,8 +731,8 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
       </div>
 
       {/* ── サイト本体 ── */}
-      <div style={{ paddingTop: 52, background: viewport === 'iphone' ? '#f3f4f6' : '#fff', minHeight: '100vh' }}>
-        {viewport === 'iphone' ? (
+      <div style={{ paddingTop: 52, background: (!isMobile && viewport === 'iphone') ? '#f3f4f6' : '#fff', minHeight: '100vh' }}>
+        {(!isMobile && viewport === 'iphone') ? (
           /* スマホフレーム：実機サイズ固定 + 内部スクロール */
           <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 0 48px' }}>
             <div style={{

@@ -19,7 +19,12 @@ export async function POST(req: Request) {
   const ext = file.name.split('.').pop() ?? 'jpg'
   const filename = `profiles/${slug}/${Date.now()}.${ext}`
 
-  const blob = await put(filename, file, { access: 'public' })
+  const token = process.env.BLOB_READ_WRITE_TOKEN
+  if (!token) {
+    return NextResponse.json({ error: 'BLOB_READ_WRITE_TOKEN が設定されていません' }, { status: 500 })
+  }
+
+  const blob = await put(filename, file, { access: 'public', token })
 
   return NextResponse.json({ url: blob.url })
 }

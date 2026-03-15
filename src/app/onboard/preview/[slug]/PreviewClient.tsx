@@ -20,6 +20,7 @@ function PlanModal({
   onSelectReview: () => void
   onSelectCustom: () => void
 }) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
   return (
     <div
       style={{
@@ -101,8 +102,8 @@ function PlanModal({
             </button>
           </div>
 
-          {/* Plan 2: プロ確認（おすすめ） */}
-          <div style={{
+          {/* Plan 2: プロ確認（おすすめ）- PCのみ */}
+          {!isMobile && <div style={{
             background: '#fff', borderRadius: 20, padding: 28,
             border: '2px solid #f59e0b',
             display: 'flex', flexDirection: 'column', gap: 12,
@@ -145,10 +146,10 @@ function PlanModal({
             >
               プロに依頼する →
             </button>
-          </div>
+          </div>}
 
-          {/* Plan 3: 完全オーダーメイド */}
-          <div style={{
+          {/* Plan 3: 完全オーダーメイド - PCのみ */}
+          {!isMobile && <div style={{
             background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', borderRadius: 20, padding: 28,
             border: '2px solid #4338ca',
             display: 'flex', flexDirection: 'column', gap: 12,
@@ -184,7 +185,7 @@ function PlanModal({
             >
               相談する（無料） →
             </button>
-          </div>
+          </div>}
         </div>
 
         <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center', lineHeight: 1.7 }}>

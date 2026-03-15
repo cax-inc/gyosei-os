@@ -512,13 +512,6 @@ export function SiteTemplate({
       }}>
         <div className="st-container" style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: 8,
-              background: th.primary,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <span style={{ color: '#fff', fontSize: 13, fontWeight: 800 }}>法</span>
-            </div>
             <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{firmName}</span>
           </div>
           <nav style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
@@ -951,13 +944,6 @@ export function SiteTemplate({
       {/* ── Footer ── */}
       <footer className="st-container" style={{ padding: '48px 0', background: '#f9fafb', borderTop: '1px solid #f3f4f6', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 6,
-            background: th.primary,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ color: '#fff', fontSize: 11, fontWeight: 800 }}>法</span>
-          </div>
           <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', letterSpacing: '-0.3px' }}>{firmName}</p>
         </div>
         <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16 }}>{prefLabel}</p>

@@ -50,7 +50,7 @@ function PlanModal({
           サイトを公開しましょう
         </h2>
         <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 36, textAlign: 'center' }}>
-          今日申し込みで初月無料。いつでも解約できます。
+          今日申し込みで初月無料。
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20, marginBottom: 28 }}>
@@ -99,6 +99,7 @@ function PlanModal({
             >
               申し込む →
             </button>
+            <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center', marginTop: 12 }}>いつでも解約できます</p>
           </div>
 
           {/* Plan 2: プロ確認（おすすめ）- PCのみ */}
@@ -187,9 +188,6 @@ function PlanModal({
           </div>}
         </div>
 
-        <p style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center', lineHeight: 1.7 }}>
-          ※ 申し込み後、担当よりメールにてご案内します。いつでもキャンセル可能です。
-        </p>
       </div>
     </div>
   )

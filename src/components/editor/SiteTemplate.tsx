@@ -323,7 +323,7 @@ function ContactForm({ siteSlug }: { siteSlug: string }) {
       <div style={{ textAlign: 'center', padding: '48px 0' }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
         <p style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8 }}>送信完了しました</p>
-        <p style={{ fontSize: 14, color: '#6b7280' }}>1営業日以内にご連絡いたします。</p>
+        <p style={{ fontSize: 14, color: '#6b7280' }}>内容を確認の上、折り返しご連絡いたします。</p>
       </div>
     )
   }
@@ -921,23 +921,7 @@ export function SiteTemplate({
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <span style={sectionLabel}>Contact</span>
           <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 8 }}>お問い合わせ</h2>
-          <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 48 }}>
-            24時間受付 · 1営業日以内にご返信します
-          </p>
-          {editable ? (
-            <div style={{
-              background: '#f9fafb', borderRadius: 16, padding: '40px',
-              textAlign: 'center', border: '2px dashed #e5e7eb',
-            }}>
-              <p style={{ fontSize: 14, color: '#9ca3af', marginBottom: 8 }}>お問い合わせフォームは公開ページで動作します</p>
-              <a href={`/${siteSlug}`} target="_blank" rel="noopener noreferrer"
-                style={{ fontSize: 13, color: th.primary, textDecoration: 'none', fontWeight: 600 }}>
-                公開ページで確認 →
-              </a>
-            </div>
-          ) : (
-            <ContactForm siteSlug={siteSlug} />
-          )}
+          <ContactForm siteSlug={siteSlug} />
         </div>
       </section>
 

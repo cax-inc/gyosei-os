@@ -22,7 +22,7 @@ export default function OnboardPage() {
             padding: '6px 16px', borderRadius: 100,
             fontSize: 12, fontWeight: 700, color: '#6366f1', letterSpacing: '0.5px',
           }}>
-            AI集客OS for 士業
+            AI集客OS for 行政書士
           </span>
         </div>
 

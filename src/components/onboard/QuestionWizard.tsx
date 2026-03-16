@@ -42,8 +42,8 @@ const STEPS: Step[] = [
   },
   {
     id: 'ownerEmail',
-    question: '問い合わせ通知を受け取るメールアドレスを教えてください',
-    subtext: 'フォームから問い合わせが届いたとき、このアドレスに通知が送られます。',
+    question: 'メールアドレスを教えてください。',
+    subtext: 'サイトの管理・ログインに使用します。',
     type: 'text',
     placeholder: '例：info@yamada-gyosei.jp',
     required: true,

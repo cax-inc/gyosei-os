@@ -179,17 +179,32 @@ function TestimonialsInput({
 // ---- 強み選択コンポーネント ----
 
 const STRENGTH_OPTIONS = [
-  '🌐 多言語対応（英語・中国語・ベトナム語など）',
   '⚡ スピード対応（即日相談・最短申請）',
   '💰 明確な料金体系',
   '🤝 地域密着・顔の見えるサポート',
   '📅 土日祝対応',
 ]
 
+const LANGUAGE_OPTIONS = [
+  '🇺🇸 英語',
+  '🇨🇳 中国語（普通話）',
+  '🇹🇼 中国語（広東語）',
+  '🇰🇷 韓国語',
+  '🇻🇳 ベトナム語',
+  '🇵🇭 タガログ語（フィリピノ語）',
+  '🇳🇵 ネパール語',
+  '🇮🇩 インドネシア語',
+  '🇲🇲 ミャンマー語',
+  '🇧🇷 ポルトガル語',
+  '🇪🇸 スペイン語',
+  '🇹🇭 タイ語',
+]
+
 function StrengthsInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const ALL_OPTIONS = [...STRENGTH_OPTIONS, ...LANGUAGE_OPTIONS]
   const lines = value ? value.split('\n') : []
-  const selectedOptions = lines.filter(l => STRENGTH_OPTIONS.includes(l))
-  const otherText = lines.filter(l => !STRENGTH_OPTIONS.includes(l)).join('\n')
+  const selectedOptions = lines.filter(l => ALL_OPTIONS.includes(l))
+  const otherText = lines.filter(l => !ALL_OPTIONS.includes(l)).join('\n')
 
   const toggleOption = (opt: string) => {
     const next = selectedOptions.includes(opt)
@@ -204,29 +219,33 @@ function StrengthsInput({ value, onChange }: { value: string; onChange: (v: stri
     onChange(combined)
   }
 
+  const CheckButton = ({ opt }: { opt: string }) => {
+    const checked = selectedOptions.includes(opt)
+    return (
+      <button
+        key={opt}
+        onClick={() => toggleOption(opt)}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-colors ${
+          checked ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300'
+        }`}
+      >
+        <span className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${checked ? 'bg-white border-white' : 'border-gray-400'}`}>
+          {checked && <span className="text-blue-600 text-xs font-bold">✓</span>}
+        </span>
+        {opt}
+      </button>
+    )
+  }
+
   return (
     <div className="space-y-2">
-      {STRENGTH_OPTIONS.map(opt => {
-        const checked = selectedOptions.includes(opt)
-        return (
-          <button
-            key={opt}
-            onClick={() => toggleOption(opt)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-colors ${
-              checked
-                ? 'bg-blue-600 border-blue-600 text-white'
-                : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300'
-            }`}
-          >
-            <span className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${
-              checked ? 'bg-white border-white' : 'border-gray-400'
-            }`}>
-              {checked && <span className="text-blue-600 text-xs font-bold">✓</span>}
-            </span>
-            {opt}
-          </button>
-        )
-      })}
+      {STRENGTH_OPTIONS.map(opt => <CheckButton key={opt} opt={opt} />)}
+
+      <p className="text-xs font-semibold text-gray-500 pt-2 pb-1">🌐 対応言語</p>
+      <div className="grid grid-cols-2 gap-2">
+        {LANGUAGE_OPTIONS.map(opt => <CheckButton key={opt} opt={opt} />)}
+      </div>
+
       <div className="mt-2">
         <textarea
           value={otherText}

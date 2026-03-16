@@ -19,6 +19,7 @@ export interface SiteTemplate {
     fontFamily: string
     borderRadius: string
     headerStyle: 'solid' | 'bordered' | 'minimal'
+    heroLayout: 'left' | 'center' | 'fullbg'
   }
 }
 
@@ -29,7 +30,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '信頼・誠実',
     desc: '深いネイビーで知性と安心感。王道の士業スタイル',
     colors: { primary: '#1B3A6B', accent: '#C8A84B', bg: '#F8F9FC', surface: '#FFFFFF', text: '#1A2340', sub: '#6B7A99' },
-    style: { fontFamily: '"Noto Serif JP", serif', borderRadius: '4px', headerStyle: 'solid' },
+    style: { fontFamily: '"Noto Serif JP", serif', borderRadius: '4px', headerStyle: 'solid', heroLayout: 'fullbg' },
   },
   {
     id: 'calm-forest',
@@ -37,7 +38,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '安心・親しみ',
     desc: '落ち着いた緑系。地域密着・親しみやすさを演出',
     colors: { primary: '#2D6A4F', accent: '#95C7A9', bg: '#F4F8F5', surface: '#FFFFFF', text: '#1C3528', sub: '#6B8C7A' },
-    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '8px', headerStyle: 'bordered' },
+    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '8px', headerStyle: 'bordered', heroLayout: 'center' },
   },
   {
     id: 'warm-terracotta',
@@ -45,7 +46,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '親しみ・温かさ',
     desc: '温かみのあるオレンジ系。話しかけやすい雰囲気',
     colors: { primary: '#B5451B', accent: '#E8935A', bg: '#FDF8F4', surface: '#FFFFFF', text: '#2E1A0E', sub: '#9A6B50' },
-    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '10px', headerStyle: 'minimal' },
+    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '10px', headerStyle: 'minimal', heroLayout: 'center' },
   },
   {
     id: 'elegant-charcoal',
@@ -53,7 +54,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '高級感・格式',
     desc: 'チャコール×ゴールドで上質な格式と専門性を表現',
     colors: { primary: '#2C2C2C', accent: '#B8962E', bg: '#F9F9F7', surface: '#FFFFFF', text: '#1A1A1A', sub: '#888888' },
-    style: { fontFamily: '"Noto Serif JP", serif', borderRadius: '2px', headerStyle: 'solid' },
+    style: { fontFamily: '"Noto Serif JP", serif', borderRadius: '2px', headerStyle: 'solid', heroLayout: 'fullbg' },
   },
   {
     id: 'sky-reliable',
@@ -61,7 +62,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '清潔感・誠実',
     desc: '明るいスカイブルーで清潔・誠実・オープンな印象',
     colors: { primary: '#1A6EAB', accent: '#5BB8F5', bg: '#F3F8FD', surface: '#FFFFFF', text: '#0D2A42', sub: '#6B8FAD' },
-    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '8px', headerStyle: 'solid' },
+    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '8px', headerStyle: 'solid', heroLayout: 'left' },
   },
   {
     id: 'pure-minimal',
@@ -69,7 +70,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: 'シンプル・モダン',
     desc: '余白を活かした現代的なミニマルデザイン',
     colors: { primary: '#111111', accent: '#3B82F6', bg: '#FFFFFF', surface: '#F7F7F7', text: '#111111', sub: '#999999' },
-    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '6px', headerStyle: 'minimal' },
+    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '6px', headerStyle: 'minimal', heroLayout: 'center' },
   },
   {
     id: 'sakura-soft',
@@ -77,7 +78,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '親しみ・女性向け',
     desc: '桜ピンクで柔らかく親しみやすい、女性行政書士に',
     colors: { primary: '#B5476A', accent: '#F0A0B8', bg: '#FDF7F9', surface: '#FFFFFF', text: '#2C1018', sub: '#AA7080' },
-    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '12px', headerStyle: 'bordered' },
+    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '12px', headerStyle: 'bordered', heroLayout: 'center' },
   },
   {
     id: 'midnight-pro',
@@ -85,7 +86,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '専門性・先進性',
     desc: 'ダークテーマで専門性と先進的なイメージを強調',
     colors: { primary: '#0F172A', accent: '#38BDF8', bg: '#0F172A', surface: '#1E293B', text: '#F1F5F9', sub: '#64748B' },
-    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '8px', headerStyle: 'solid' },
+    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '8px', headerStyle: 'solid', heroLayout: 'fullbg' },
   },
   {
     id: 'earth-natural',
@@ -93,7 +94,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '地域密着・自然',
     desc: '土のような温かいブラウン系。地に足のついた信頼感',
     colors: { primary: '#5C3D1E', accent: '#A07850', bg: '#FAF6F0', surface: '#FFFFFF', text: '#2C1A08', sub: '#8C6A48' },
-    style: { fontFamily: '"Noto Serif JP", serif', borderRadius: '6px', headerStyle: 'bordered' },
+    style: { fontFamily: '"Noto Serif JP", serif', borderRadius: '6px', headerStyle: 'bordered', heroLayout: 'left' },
   },
   {
     id: 'civic-blue',
@@ -101,7 +102,7 @@ export const GYOSEI_TEMPLATES: SiteTemplate[] = [
     tag: '行政・公共感',
     desc: '公共・官公庁を想起させる落ち着いたロイヤルブルー',
     colors: { primary: '#1E3A8A', accent: '#3B82F6', bg: '#EFF6FF', surface: '#FFFFFF', text: '#1E2E50', sub: '#6B80A8' },
-    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '4px', headerStyle: 'solid' },
+    style: { fontFamily: '"Noto Sans JP", sans-serif', borderRadius: '4px', headerStyle: 'solid', heroLayout: 'fullbg' },
   },
 ]
 

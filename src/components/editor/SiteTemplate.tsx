@@ -486,6 +486,7 @@ export function SiteTemplate({
     fontFamily: theme?.style.fontFamily  ?? "'Inter', 'Helvetica Neue', Arial, 'Hiragino Sans', 'Yu Gothic', sans-serif",
     radius:     theme?.style.borderRadius ?? '100px',
     headerStyle: theme?.style.headerStyle ?? 'minimal',
+    heroLayout: theme?.style.heroLayout  ?? 'left',
   }
 
   // ── スタイル定数 ────────────────────────────────────────────────────────────
@@ -539,73 +540,79 @@ export function SiteTemplate({
       </header>
 
       {/* ── Hero ── */}
-      <section style={{
-        background: th.bg,
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', top: -160, right: -160,
-          width: 560, height: 560, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: -100, left: -100,
-          width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
-
-        <div className="st-container st-hero-inner">
-          <div style={{ marginBottom: 24 }}>
-            <ET as="span" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined} style={{
-              display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
-              color: th.primary, background: `${th.primary}14`,
-              padding: '5px 14px', borderRadius: 100, border: `1px solid ${th.primary}30`,
-            }} />
+      {th.heroLayout === 'left' && (
+        <section style={{ background: th.bg, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -160, right: -160, width: 560, height: 560, borderRadius: '50%', background: `radial-gradient(circle, ${th.primary}10 0%, transparent 70%)`, pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: -100, left: -100, width: 400, height: 400, borderRadius: '50%', background: `radial-gradient(circle, ${th.accent}08 0%, transparent 70%)`, pointerEvents: 'none' }} />
+          <div className="st-container st-hero-inner">
+            <div style={{ marginBottom: 24 }}>
+              <ET as="span" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined} style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const, color: th.primary, background: `${th.primary}14`, padding: '5px 14px', borderRadius: 100, border: `1px solid ${th.primary}30` }} />
+            </div>
+            <ET as="h1" value={hero.headline} onChange={v => upHero('headline', v)} multi className="block st-hero-title"
+              style={{ fontSize: 'clamp(36px, 5vw, 64px)' as string, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-2px', color: th.text, marginBottom: 24, maxWidth: 780 } as React.CSSProperties} />
+            <ET as="p" value={hero.subheadline} onChange={v => upHero('subheadline', v)} multi className="block st-hero-sub"
+              style={{ fontSize: 17, color: th.sub, lineHeight: 1.8, maxWidth: 520, marginBottom: 44, fontWeight: 400 } as React.CSSProperties} />
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }} className="st-hero-btns">
+              <a href="#contact" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: th.primary, color: '#fff', fontWeight: 700, padding: '14px 28px', borderRadius: th.radius, fontSize: 15, textDecoration: 'none', letterSpacing: '-0.3px' }}>
+                <ET value={hero.ctaText} onChange={v => upHero('ctaText', v)} style={{ pointerEvents: 'none' } as React.CSSProperties} /><span>→</span>
+              </a>
+              <a href="tel:0120000000" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1.5px solid ${th.primary}40`, color: th.primary, fontWeight: 600, padding: '13px 24px', borderRadius: 100, fontSize: 14, textDecoration: 'none' }}>
+                📞 お電話でのご相談
+              </a>
+            </div>
+            {hero.ctaNote && <ET as="p" value={hero.ctaNote} onChange={v => upHero('ctaNote', v)} multi className="block" style={{ marginTop: 20, fontSize: 12, color: th.sub, letterSpacing: '0.3px' } as React.CSSProperties} />}
           </div>
+        </section>
+      )}
 
-          <ET as="h1" value={hero.headline} onChange={v => upHero('headline', v)} multi
-            className="block st-hero-title"
-            style={{
-              fontSize: 'clamp(36px, 5vw, 64px)' as string, fontWeight: 800,
-              lineHeight: 1.1, letterSpacing: '-2px', color: '#1e1b4b',
-              marginBottom: 24, maxWidth: 780,
-            } as React.CSSProperties}
-          />
-
-          <ET as="p" value={hero.subheadline} onChange={v => upHero('subheadline', v)} multi
-            className="block st-hero-sub"
-            style={{ fontSize: 17, color: '#4b5563', lineHeight: 1.8, maxWidth: 520, marginBottom: 44, fontWeight: 400 } as React.CSSProperties}
-          />
-
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }} className="st-hero-btns">
-            <a href="#contact" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: th.primary, color: '#fff', fontWeight: 700,
-              padding: '14px 28px', borderRadius: th.radius, fontSize: 15,
-              textDecoration: 'none', letterSpacing: '-0.3px',
-            }}>
-              <ET value={hero.ctaText} onChange={v => upHero('ctaText', v)} style={{ pointerEvents: 'none' } as React.CSSProperties} />
-              <span>→</span>
-            </a>
-            <a href="tel:0120000000" style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              border: '1.5px solid #c7d2fe', color: '#4338ca',
-              fontWeight: 600, padding: '13px 24px', borderRadius: 100, fontSize: 14,
-              textDecoration: 'none', background: 'rgba(255,255,255,0.7)',
-            }}>
-              📞 お電話でのご相談
-            </a>
+      {th.heroLayout === 'center' && (
+        <section style={{ background: th.bg, position: 'relative', overflow: 'hidden', textAlign: 'center' }}>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 800, height: 800, borderRadius: '50%', background: `radial-gradient(circle, ${th.primary}08 0%, transparent 65%)`, pointerEvents: 'none' }} />
+          <div className="st-container st-hero-inner" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ marginBottom: 24 }}>
+              <ET as="span" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined} style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const, color: th.primary, background: `${th.primary}14`, padding: '5px 14px', borderRadius: 100, border: `1px solid ${th.primary}30` }} />
+            </div>
+            <ET as="h1" value={hero.headline} onChange={v => upHero('headline', v)} multi className="block st-hero-title"
+              style={{ fontSize: 'clamp(36px, 5vw, 60px)' as string, fontWeight: 800, lineHeight: 1.15, letterSpacing: '-2px', color: th.text, marginBottom: 24, maxWidth: 700 } as React.CSSProperties} />
+            <ET as="p" value={hero.subheadline} onChange={v => upHero('subheadline', v)} multi className="block st-hero-sub"
+              style={{ fontSize: 17, color: th.sub, lineHeight: 1.8, maxWidth: 500, marginBottom: 44, fontWeight: 400 } as React.CSSProperties} />
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }} className="st-hero-btns">
+              <a href="#contact" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: th.primary, color: '#fff', fontWeight: 700, padding: '14px 32px', borderRadius: th.radius, fontSize: 15, textDecoration: 'none', letterSpacing: '-0.3px' }}>
+                <ET value={hero.ctaText} onChange={v => upHero('ctaText', v)} style={{ pointerEvents: 'none' } as React.CSSProperties} /><span>→</span>
+              </a>
+              <a href="tel:0120000000" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: `1.5px solid ${th.primary}40`, color: th.primary, fontWeight: 600, padding: '13px 24px', borderRadius: 100, fontSize: 14, textDecoration: 'none' }}>
+                📞 お電話でのご相談
+              </a>
+            </div>
+            {hero.ctaNote && <ET as="p" value={hero.ctaNote} onChange={v => upHero('ctaNote', v)} multi className="block" style={{ marginTop: 20, fontSize: 12, color: th.sub, letterSpacing: '0.3px' } as React.CSSProperties} />}
           </div>
-          {hero.ctaNote && (
-            <ET as="p" value={hero.ctaNote} onChange={v => upHero('ctaNote', v)} multi
-              className="block"
-              style={{ marginTop: 20, fontSize: 12, color: '#9ca3af', letterSpacing: '0.3px' } as React.CSSProperties}
-            />
-          )}
-        </div>
-      </section>
+        </section>
+      )}
+
+      {th.heroLayout === 'fullbg' && (
+        <section style={{ background: th.primary, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: -200, right: -200, width: 600, height: 600, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: -100, left: -100, width: 400, height: 400, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' }} />
+          <div className="st-container st-hero-inner">
+            <div style={{ marginBottom: 24 }}>
+              <ET as="span" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined} style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,0.75)', background: 'rgba(255,255,255,0.12)', padding: '5px 14px', borderRadius: 100, border: '1px solid rgba(255,255,255,0.2)' }} />
+            </div>
+            <ET as="h1" value={hero.headline} onChange={v => upHero('headline', v)} multi className="block st-hero-title"
+              style={{ fontSize: 'clamp(36px, 5vw, 64px)' as string, fontWeight: 800, lineHeight: 1.1, letterSpacing: '-2px', color: '#ffffff', marginBottom: 24, maxWidth: 780 } as React.CSSProperties} />
+            <ET as="p" value={hero.subheadline} onChange={v => upHero('subheadline', v)} multi className="block st-hero-sub"
+              style={{ fontSize: 17, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, maxWidth: 520, marginBottom: 44, fontWeight: 400 } as React.CSSProperties} />
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }} className="st-hero-btns">
+              <a href="#contact" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#ffffff', color: th.primary, fontWeight: 700, padding: '14px 28px', borderRadius: th.radius, fontSize: 15, textDecoration: 'none', letterSpacing: '-0.3px' }}>
+                <ET value={hero.ctaText} onChange={v => upHero('ctaText', v)} style={{ pointerEvents: 'none' } as React.CSSProperties} /><span>→</span>
+              </a>
+              <a href="tel:0120000000" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1.5px solid rgba(255,255,255,0.4)', color: '#ffffff', fontWeight: 600, padding: '13px 24px', borderRadius: 100, fontSize: 14, textDecoration: 'none' }}>
+                📞 お電話でのご相談
+              </a>
+            </div>
+            {hero.ctaNote && <ET as="p" value={hero.ctaNote} onChange={v => upHero('ctaNote', v)} multi className="block" style={{ marginTop: 20, fontSize: 12, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.3px' } as React.CSSProperties} />}
+          </div>
+        </section>
+      )}
 
       {/* ── 強み 3バッジ ── */}
       <section style={{ background: '#fafafa', borderTop: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6' }}>

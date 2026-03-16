@@ -11,7 +11,7 @@ import type { GenerateInput, UserTestimonial } from '@/lib/ai-site/types'
 
 // ---- ステップ定義 ----
 
-type StepId = 'firmName' | 'ownerName' | 'ownerEmail' | 'ownerBio' | 'services' | 'serviceAreas' | 'strengths' | 'styles'
+type StepId = 'firmName' | 'ownerName' | 'ownerBio' | 'services' | 'serviceAreas' | 'strengths' | 'styles'
 
 interface Step {
   id: StepId
@@ -38,14 +38,6 @@ const STEPS: Step[] = [
     subtext: 'サイトの事務所紹介に掲載されます',
     type: 'text',
     placeholder: '例：山田 太郎',
-    required: true,
-  },
-  {
-    id: 'ownerEmail',
-    question: 'メールアドレスを教えてください。',
-    subtext: 'サイトの管理・ログインに使用します。',
-    type: 'text',
-    placeholder: '例：info@yamada-gyosei.jp',
     required: true,
   },
   {
@@ -452,10 +444,10 @@ function AreaSelectInput({ value, onChange }: { value: string[]; onChange: (v: s
 
 // ---- メインコンポーネント ----
 
-export function QuestionWizard() {
+export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
   const router = useRouter()
   const [stepIndex, setStepIndex] = useState(0)
-  const [answers, setAnswers] = useState<GenerateInput>(INITIAL_ANSWERS)
+  const [answers, setAnswers] = useState<GenerateInput>({ ...INITIAL_ANSWERS, ownerEmail })
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedSlug, setGeneratedSlug] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -490,9 +482,6 @@ export function QuestionWizard() {
     const val = answers[currentStep.id as keyof GenerateInput]
     if (Array.isArray(val)) return val.length > 0
     if (typeof val !== 'string' || val.trim().length === 0) return false
-    if (currentStep.id === 'ownerEmail') {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim())
-    }
     return true
   }
 
@@ -604,7 +593,7 @@ export function QuestionWizard() {
             {currentStep.type === 'text' && (
               <>
                 <input
-                  type={currentStep.id === 'ownerEmail' ? 'email' : 'text'}
+                  type="text"
                   value={currentValue as string}
                   onChange={(e) => setValue(e.target.value)}
                   placeholder={currentStep.placeholder}
@@ -621,9 +610,6 @@ export function QuestionWizard() {
                   }}
                   autoFocus
                 />
-                {currentStep.id === 'ownerEmail' && (currentValue as string).length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((currentValue as string).trim()) && (
-                  <p className="text-xs text-red-500">メールアドレスの形式で入力してください（例：info@example.com）</p>
-                )}
                 <p className="text-xs text-gray-400 text-right">
                   Enter 2回 または「次へ」で進む
                 </p>

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { SiteTemplate } from '@/components/editor/SiteTemplate'
+import { GYOSEI_TEMPLATES } from '@/components/editor/TemplateSelectorPanel'
 import type { SiteContent } from '@/lib/ai-site/types'
 
 interface Props {
@@ -31,6 +32,7 @@ export default async function PublicSitePage({ params }: Props) {
   if (!site || site.status !== 'published') notFound()
 
   const content = site.siteContent as unknown as SiteContent
+  const theme = site.templateId ? GYOSEI_TEMPLATES.find(t => t.id === site.templateId) : undefined
 
   return (
     <SiteTemplate
@@ -39,6 +41,7 @@ export default async function PublicSitePage({ params }: Props) {
       content={content}
       siteSlug={slug}
       editable={false}
+      theme={theme}
     />
   )
 }

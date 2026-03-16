@@ -23,6 +23,7 @@ export default async function PreviewPage({ params }: Props) {
       firmName={site.firmName}
       prefecture={site.prefecture}
       initialContent={content}
+      initialTemplateId={site.templateId ?? undefined}
     />
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { SiteTemplate } from '@/components/editor/SiteTemplate'
-import { TemplateSelectorPanel } from '@/components/editor/TemplateSelectorPanel'
+import { TemplateSelectorPanel, GYOSEI_TEMPLATES } from '@/components/editor/TemplateSelectorPanel'
 import type { SiteTemplate as SiteTheme } from '@/components/editor/TemplateSelectorPanel'
 import { SeiSeiChat } from '@/components/editor/SeiSeiChat'
 import type { SiteContent } from '@/lib/ai-site/types'
@@ -508,9 +508,10 @@ interface Props {
   firmName: string
   prefecture: string
   initialContent: SiteContent
+  initialTemplateId?: string
 }
 
-export function PreviewClient({ slug, firmName, prefecture, initialContent }: Props) {
+export function PreviewClient({ slug, firmName, prefecture, initialContent, initialTemplateId }: Props) {
   const [content, setContent] = useState<SiteContent>(initialContent)
   const [history, setHistory] = useState<SiteContent[]>([initialContent])
   const [historyIndex, setHistoryIndex] = useState(0)
@@ -526,7 +527,9 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
   const [showGuide, setShowGuide] = useState(false)
   const [viewport, setViewport] = useState<'pc' | 'iphone'>('pc')
   const [showTemplatePanel, setShowTemplatePanel] = useState(false)
-  const [activeTheme, setActiveTheme] = useState<SiteTheme | undefined>(undefined)
+  const [activeTheme, setActiveTheme] = useState<SiteTheme | undefined>(
+    initialTemplateId ? GYOSEI_TEMPLATES.find(t => t.id === initialTemplateId) : undefined
+  )
   const [showChat, setShowChat] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -841,7 +844,14 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent }: Pr
         isOpen={showTemplatePanel}
         onClose={() => setShowTemplatePanel(false)}
         currentTemplateId={activeTheme?.id}
-        onApply={(t) => { setActiveTheme(t) }}
+        onApply={(t) => {
+          setActiveTheme(t)
+          fetch(`/api/editor/${slug}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ templateId: t.id }),
+          }).catch(() => {})
+        }}
       />
 
       {/* ── 生成完了トースト ── */}

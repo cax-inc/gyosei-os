@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     // サイトにオーナー情報を保存して公開
     await prisma.aiSite.update({
       where: { slug },
-      data: { ownerEmail: email, ownerName: name, status: 'published' },
+      data: { ownerEmail: email, ownerName: name, status: 'published', plan: plan ?? null },
     })
 
     // セッション作成（自動ログイン）

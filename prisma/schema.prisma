@@ -107,6 +107,8 @@ model AiSite {
   // エディタ上に追加した自由配置要素（CanvasElement[]）
   editorOverlay Json     @default("[]")
   templateId    String?  @db.VarChar(50)
+  // null = 未申込 | monthly | review | custom
+  plan          String?  @db.VarChar(20)
   // draft | published | paused
   status        String   @default("draft") @db.VarChar(20)
   ownerEmail    String?  @db.VarChar(255)

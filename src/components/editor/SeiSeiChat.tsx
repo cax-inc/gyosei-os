@@ -43,10 +43,12 @@ function CoinModal({
   fatLevel,
   onPurchase,
   onClose,
+  purchasing,
 }: {
   fatLevel: 0 | 1 | 2 | 3
   onPurchase: () => void
   onClose: () => void
+  purchasing: boolean
 }) {
   return (
     <div style={{
@@ -70,16 +72,17 @@ function CoinModal({
 
       <button
         onClick={onPurchase}
+        disabled={purchasing}
         style={{
-          background: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
+          background: purchasing ? '#d1d5db' : 'linear-gradient(135deg, #f59e0b, #fbbf24)',
           color: '#1f2937', fontWeight: 800, fontSize: 15,
           padding: '12px 32px', borderRadius: 100, border: 'none',
-          cursor: 'pointer', letterSpacing: '-0.3px',
-          boxShadow: '0 4px 20px rgba(251,191,36,0.4)',
+          cursor: purchasing ? 'default' : 'pointer', letterSpacing: '-0.3px',
+          boxShadow: purchasing ? 'none' : '0 4px 20px rgba(251,191,36,0.4)',
           marginBottom: 12,
         }}
       >
-        コインをあげる → {PACK_PRICE} / {PAID_PACK}回
+        {purchasing ? '処理中…' : `コインをあげる → ${PACK_PRICE} / ${PAID_PACK}回`}
       </button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -166,6 +169,7 @@ export function SeiSeiChat({ isOpen, onClose, slug, isPaidPlan = false }: SeiSei
   const [showCoinModal, setShowCoinModal] = useState(false)
   const [showEating, setShowEating]       = useState(false)
   const [prevPaid, setPrevPaid]           = useState(0) // 食べる前のクレジット（fat計算用）
+  const [purchasing, setPurchasing]       = useState(false)
 
   // 有料プラン用: 1分間のタイムスタンプ記録（レート制限）
   const recentTimestamps = useRef<number[]>([])
@@ -173,11 +177,18 @@ export function SeiSeiChat({ isOpen, onClose, slug, isPaidPlan = false }: SeiSei
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (isPaidPlan) return // 有料プランはLocalStorageカウント不要
+    if (isPaidPlan) return
+    // DBからクレジット残数を取得
+    fetch(`/api/editor/${slug}/credits`)
+      .then(r => r.json())
+      .then(data => {
+        if (typeof data.chatCredits === 'number') setPaidCredits(data.chatCredits)
+      })
+      .catch(() => {/* サイレントに失敗 */})
+
+    // LocalStorageから送信回数を復元（無料枠カウント用）
     const count = parseInt(localStorage.getItem(LS_COUNT(slug)) ?? '0', 10)
-    const paid  = parseInt(localStorage.getItem(LS_PAID(slug))  ?? '0', 10)
     setChatCount(count)
-    setPaidCredits(paid)
   }, [slug, isPaidPlan])
 
   useEffect(() => {
@@ -207,12 +218,17 @@ export function SeiSeiChat({ isOpen, onClose, slug, isPaidPlan = false }: SeiSei
     setInput('')
     if (!isPaidPlan) {
       const newCount = chatCount + 1
-      // 有料分を先に消費、なければ無料分
-      const newPaid  = chatCount >= FREE_LIMIT ? Math.max(0, paidCredits - 1) : paidCredits
       setChatCount(newCount)
-      setPaidCredits(newPaid)
       localStorage.setItem(LS_COUNT(slug), String(newCount))
-      localStorage.setItem(LS_PAID(slug),  String(newPaid))
+
+      // 無料枠を超えた場合はDBのクレジットを消費
+      if (chatCount >= FREE_LIMIT) {
+        fetch(`/api/editor/${slug}/credits`, { method: 'POST' })
+          .then(r => r.json())
+          .then(data => { if (typeof data.chatCredits === 'number') setPaidCredits(data.chatCredits) })
+          .catch(() => {/* サイレントに失敗 */})
+        setPaidCredits(prev => Math.max(0, prev - 1))
+      }
     }
 
     setMessages(prev => [...prev, { role: 'user', text: msg }])
@@ -236,19 +252,31 @@ export function SeiSeiChat({ isOpen, onClose, slug, isPaidPlan = false }: SeiSei
     }
   }
 
-  // TODO: Stripe連携に差し替える
-  const handlePurchase = useCallback(() => {
-    setPrevPaid(paidCredits)
-    setShowCoinModal(false)
-    setShowEating(true)
-  }, [paidCredits])
+  const handlePurchase = useCallback(async () => {
+    if (purchasing) return
+    setPurchasing(true)
+    try {
+      const res = await fetch(`/api/stripe/coins/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      })
+      const data = await res.json() as { url?: string; error?: string }
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        console.error('[SeiSeiChat] coins checkout error:', data.error)
+      }
+    } catch (e) {
+      console.error('[SeiSeiChat] coins checkout fetch error:', e)
+    } finally {
+      setPurchasing(false)
+    }
+  }, [slug, purchasing])
 
   const handleEatingDone = useCallback(() => {
-    const newPaid = paidCredits + PAID_PACK
-    setPaidCredits(newPaid)
-    localStorage.setItem(LS_PAID(slug), String(newPaid))
     setShowEating(false)
-  }, [paidCredits, slug])
+  }, [])
 
   if (!isOpen) return null
 
@@ -280,6 +308,7 @@ export function SeiSeiChat({ isOpen, onClose, slug, isPaidPlan = false }: SeiSei
             fatLevel={fatLevel}
             onPurchase={handlePurchase}
             onClose={() => setShowCoinModal(false)}
+            purchasing={purchasing}
           />
         )}
 

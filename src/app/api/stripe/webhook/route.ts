@@ -30,6 +30,16 @@ export async function POST(req: NextRequest) {
         const slug = session.metadata?.slug
         if (!slug) break
 
+        // コインパック購入（一回払い）
+        if (session.mode === 'payment' && session.metadata?.type === 'coins') {
+          await prisma.aiSite.update({
+            where: { slug },
+            data: { chatCredits: { increment: 20 } },
+          })
+          console.log(`[stripe/webhook] coins purchased: slug=${slug} +20 credits`)
+          break
+        }
+
         const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
         const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
 

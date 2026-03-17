@@ -85,6 +85,7 @@ model AiSite {
   plan                 String?         @db.VarChar(20)
   stripeCustomerId     String?         @db.VarChar(100)
   stripeSubscriptionId String?         @db.VarChar(100)
+  chatCredits          Int             @default(0)
   seoPages             AiSeoPage[]
   leads                AiSiteLead[]
   reviewRequests       ReviewRequest[]

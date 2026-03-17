@@ -9,7 +9,7 @@ export default function PrivacyPage() {
       <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 48 }}>最終更新日：2026年3月18日</p>
 
       <p style={{ marginBottom: 32 }}>
-        【要記入：運営者氏名】（以下「運営者」）は、「webseisei.com」（以下「本サービス」）における個人情報の取り扱いについて、以下のとおりプライバシーポリシーを定めます。
+        小栁結衣（以下「運営者」）は、「webseisei.com」（以下「本サービス」）における個人情報の取り扱いについて、以下のとおりプライバシーポリシーを定めます。
       </p>
 
       {[
@@ -96,7 +96,7 @@ export default function PrivacyPage() {
           title: '9. お問い合わせ',
           content: `個人情報の取り扱いに関するお問い合わせは、以下までご連絡ください。
 
-事業者名：【要記入：運営者氏名】
+事業者名：小栁結衣
 メールアドレス：support@webseisei.com`,
         },
       ].map(({ title, content }) => (

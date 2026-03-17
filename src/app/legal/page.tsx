@@ -10,10 +10,10 @@ export default function LegalPage() {
 
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
         {[
-          { label: '販売事業者', value: '【要記入：戸籍上の氏名】' },
-          { label: '運営責任者', value: '【要記入：氏名】' },
-          { label: '所在地', value: '【要記入：住所】※請求があった場合、遅滞なく開示します' },
-          { label: '電話番号', value: '【要記入：電話番号】（受付時間：平日10:00〜18:00）' },
+          { label: '販売事業者', value: '小栁結衣' },
+          { label: '運営責任者', value: '小栁結衣' },
+          { label: '所在地', value: '請求があった場合、遅滞なく開示します' },
+          { label: '電話番号', value: '請求があった場合、遅滞なく開示します' },
           { label: 'メールアドレス', value: 'support@webseisei.com' },
           { label: 'サービス名', value: 'webseisei.com' },
           { label: 'サービス内容', value: '行政書士向けAIウェブサイト自動生成SaaSサービス' },

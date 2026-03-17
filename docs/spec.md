@@ -92,11 +92,16 @@ gyosei-os/
 │   │   ├── [slug]/
 │   │   │   └── page.tsx          # 公開サイト（{slug}.webseisei.com）
 │   │   ├── onboard/
-│   │   │   ├── page.tsx          # オンボーディング LP
+│   │   │   ├── page.tsx          # /onboard → / へリダイレクト
+│   │   │   ├── existing/page.tsx  # 既存サイトあり向けLP
 │   │   │   ├── questions/page.tsx # 質問ウィザード
+│   │   │   ├── success/page.tsx   # 申込完了ページ
 │   │   │   └── preview/[slug]/
 │   │   │       ├── page.tsx      # プレビュー（Server Component）
 │   │   │       └── PreviewClient.tsx # プレビュー（Client Component）
+│   │   ├── privacy/page.tsx      # プライバシーポリシー
+│   │   ├── terms/page.tsx        # 利用規約
+│   │   ├── legal/page.tsx        # 特定商取引法に基づく表記
 │   │   ├── login/page.tsx        # ユーザーログイン
 │   │   ├── dashboard/
 │   │   │   ├── page.tsx          # ダッシュボード一覧
@@ -123,8 +128,16 @@ gyosei-os/
 │   │       │   ├── magic/route.ts     # マジックリンク送信
 │   │       │   ├── verify/route.ts    # トークン検証・セッション発行
 │   │       │   └── logout/route.ts    # ログアウト
-│   │       ├── editor/[slug]/route.ts # コンテンツ保存（PATCH）
+│   │       ├── editor/[slug]/
+│   │       │   ├── route.ts           # コンテンツ保存（PATCH, セッション認証済み）
+│   │       │   └── credits/route.ts   # チャットクレジット取得・消費
 │   │       ├── site/[slug]/leads/route.ts # 公開サイトからのリード受信
+│   │       ├── contact/route.ts       # LP からのお問い合わせ
+│   │       ├── stripe/
+│   │       │   ├── checkout/route.ts  # サブスクリプション Checkout セッション作成
+│   │       │   ├── coins/checkout/route.ts # コインパック一回払い Checkout
+│   │       │   ├── portal/route.ts    # カスタマーポータル URL 発行
+│   │       │   └── webhook/route.ts   # Stripe Webhook 受信
 │   │       ├── dashboard/[slug]/
 │   │       │   ├── publish/route.ts   # 公開
 │   │       │   └── unpublish/route.ts # 非公開
@@ -249,7 +262,7 @@ Vercel maxDuration: 60秒
 
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
-| PATCH | `/api/editor/[slug]` | サイトコンテンツ保存 | 不要（要検討） |
+| PATCH | `/api/editor/[slug]` | サイトコンテンツ保存 | セッション |
 | POST | `/api/dashboard/[slug]/publish` | サイト公開 | セッション |
 | POST | `/api/dashboard/[slug]/unpublish` | サイト非公開 | セッション |
 
@@ -280,13 +293,19 @@ Vercel maxDuration: 60秒
 4. autoReply=true の場合、Resend で自動返信メールを送信（問い合わせ者宛）
 ```
 
-### 4.5 SEO系
+### 4.5 お問い合わせ系（webseisei.com LP向け）
+
+| メソッド | パス | 説明 | 認証 |
+|---------|------|------|------|
+| POST | `/api/contact` | LP からのお問い合わせ送信（Resend でメール通知） | 不要 |
+
+### 4.6 SEO系
 
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
 | POST | `/api/seo/generate` | SEOページ生成（Claude API） | セッション |
 
-### 4.6 管理系
+### 4.7 管理系
 
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
@@ -301,25 +320,30 @@ Vercel maxDuration: 60秒
 ### 5.1 主要テーブル一覧
 
 ```
-┌────────────────────┐
-│      ai_sites      │ ← AI集客OSのコアテーブル
-│──────────────────  │
-│ id (UUID PK)       │
-│ slug (UNIQUE)      │─────────────────────────────────┐
-│ firmName           │                                 │
-│ ownerEmail         │                                 │
-│ prefecture         │                                 │
-│ services (array)   │                                 │
-│ strengths          │                                 │
-│ styles (array)     │                                 │
-│ siteContent (JSON) │  ← AIが生成したコンテンツ全体     │
-│ seoKeywords (JSON) │  ← SEOキーワード候補             │
-│ editorOverlay(JSON)│                                 │
-│ status             │  draft | published | paused     │
-│ ownerEmail         │                                 │
-│ autoReply (bool)   │                                 │
-│ promptHash         │  ← AIキャッシュキー（SHA-256）    │
-└────────┬───────────┘                                 │
+┌────────────────────────┐
+│        ai_sites        │ ← AI集客OSのコアテーブル
+│────────────────────────│
+│ id (UUID PK)           │
+│ slug (UNIQUE)          │─────────────────────────────┐
+│ firmName               │                             │
+│ ownerEmail             │                             │
+│ ownerName              │                             │
+│ prefecture             │                             │
+│ services (array)       │                             │
+│ strengths              │                             │
+│ styles (array)         │                             │
+│ siteContent (JSON)     │  ← AIが生成したコンテンツ全体 │
+│ seoKeywords (JSON)     │  ← SEOキーワード候補         │
+│ editorOverlay (JSON)   │                             │
+│ templateId             │                             │
+│ status                 │  draft|published|paused     │
+│ autoReply (bool)       │                             │
+│ promptHash             │  ← AIキャッシュキー（SHA-256）│
+│ plan                   │  monthly|annual|null        │
+│ stripeCustomerId       │                             │
+│ stripeSubscriptionId   │                             │
+│ chatCredits (int)      │  ← コイン購入で加算          │
+└────────┬───────────────┘                             │
          │                                             │
          ├──────────────────────────────────────┐      │
          │                                      │      │
@@ -614,6 +638,11 @@ type SiteContent = {
 | `AUTH_SECRET` | HMAC-SHA256 セッション署名シークレット（32バイト以上） |
 | `ADMIN_EMAIL` | 管理者メールアドレス |
 | `ADMIN_PASSWORD` | 管理者パスワード（bcrypt ハッシュ推奨） |
+| `STRIPE_SECRET_KEY` | Stripe シークレットキー（テスト: `sk_test_xxx` / 本番: `sk_live_xxx`） |
+| `STRIPE_PRICE_MONTHLY` | 月額プランの価格ID（`price_xxx`） |
+| `STRIPE_PRICE_ANNUAL` | 年額プランの価格ID（`price_xxx`） |
+| `STRIPE_PRICE_COINS` | コインパック（20回/¥300）の価格ID（`price_xxx`） |
+| `STRIPE_WEBHOOK_SECRET` | Webhook 署名シークレット（`whsec_xxx`） |
 
 ### 8.4 Vercel DNS・ドメイン設定
 
@@ -696,7 +725,8 @@ adminUrl(path: string): string
 
 | ルート | メソッド | 説明 |
 |--------|---------|------|
-| `/api/stripe/checkout` | POST | Checkoutセッション作成 → StripeのURL返却 |
+| `/api/stripe/checkout` | POST | サブスクリプション Checkout セッション作成 → URL返却 |
+| `/api/stripe/coins/checkout` | POST | コインパック（20回/¥300）一回払い Checkout セッション作成 |
 | `/api/stripe/webhook` | POST | 決済完了・解約イベントを受信してDBを更新 |
 | `/api/stripe/portal` | POST | カスタマーポータル（解約・プラン変更）URL発行 |
 
@@ -704,9 +734,19 @@ adminUrl(path: string): string
 
 | イベント | 処理 |
 |---------|------|
-| `checkout.session.completed` | `plan`を更新・`status`を`published`に変更・公開完了メール送信 |
+| `checkout.session.completed` (mode=subscription) | `plan`を更新・`status`を`published`に変更・公開完了メール送信 |
+| `checkout.session.completed` (mode=payment, metadata.type=coins) | `chatCredits += 20` |
 | `customer.subscription.deleted` | `plan`をnullに・`status`を`paused`に変更 |
 | `customer.subscription.updated` | `plan`・`status`をサブスクリプション状態に同期 |
+
+### 11.4 コインパック（チャットクレジット）
+
+| 項目 | 内容 |
+|------|------|
+| 価格 | ¥300（税込）/ 20回 |
+| 購入方法 | せいせいくんチャット上限到達時にモーダル表示→Stripe一回払い |
+| クレジット保存先 | `ai_sites.chatCredits`（DB。LocalStorageは使用しない） |
+| 有料プラン加入者 | `isPaidPlan=true` の場合、クレジット制限なし・チャット無制限 |
 
 ### 11.4 テスト用カード番号
 

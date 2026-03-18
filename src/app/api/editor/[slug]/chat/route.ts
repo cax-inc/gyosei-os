@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '@/lib/prisma'
+import { getSession } from '@/lib/session'
 import type { SiteContent } from '@/lib/ai-site/types'
 
 export const maxDuration = 30
+
+// サーバー側レート制限: slug単位で1分間に10回まで
+const rateLimitMap = new Map<string, number[]>()
 
 interface Params {
   params: Promise<{ slug: string }>
@@ -11,13 +15,31 @@ interface Params {
 
 export async function POST(req: NextRequest, { params }: Params) {
   const { slug } = await params
+
+  // セッション認証
+  const session = await getSession()
+  if (!session) {
+    return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
+  }
+
   const { message } = await req.json() as { message: string }
 
   const site = await prisma.aiSite.findUnique({
     where: { slug },
-    select: { firmName: true, services: true, siteContent: true },
+    select: { firmName: true, services: true, siteContent: true, ownerEmail: true },
   })
   if (!site) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (site.ownerEmail !== session.email) {
+    return NextResponse.json({ error: '権限がありません' }, { status: 403 })
+  }
+
+  // レート制限: 1分間に10回まで（有料プランも同様）
+  const now = Date.now()
+  const timestamps = (rateLimitMap.get(slug) ?? []).filter(t => now - t < 60_000)
+  if (timestamps.length >= 10) {
+    return NextResponse.json({ error: '1分間に送れるのは10件までです。少し待ってから試してください。' }, { status: 429 })
+  }
+  rateLimitMap.set(slug, [...timestamps, now])
 
   const sc = site.siteContent as unknown as SiteContent
 

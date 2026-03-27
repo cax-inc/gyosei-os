@@ -3,8 +3,6 @@ import Stripe from 'stripe'
 import { Resend } from 'resend'
 import { prisma } from '@/lib/prisma'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req: NextRequest) {
@@ -69,6 +67,7 @@ export async function POST(req: NextRequest) {
             ? `https://app.webseisei.com/dashboard/${slug}`
             : `http://localhost:3000/dashboard/${slug}`
 
+          const resend = new Resend(process.env.RESEND_API_KEY)
           await resend.emails.send({
             from: process.env.RESEND_FROM ?? 'noreply@webseisei.com',
             to: ownerEmail,

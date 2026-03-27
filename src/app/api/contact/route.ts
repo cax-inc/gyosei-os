@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(req: NextRequest) {
   try {
     const { name, email, message } = await req.json() as { name: string; email: string; message?: string }
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     if (!name || !email) {
       return NextResponse.json({ error: '名前とメールアドレスは必須です' }, { status: 400 })
     }
 
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from: process.env.RESEND_FROM ?? 'noreply@webseisei.com',
       to: process.env.ADMIN_EMAIL ?? 'noreply@webseisei.com',
       subject: '【webseisei】既存サイト相談の問い合わせ',
@@ -35,6 +34,11 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     })
+
+    if (sendError) {
+      console.error('[contact] Resend送信エラー:', sendError)
+      return NextResponse.json({ error: 'メールの送信に失敗しました' }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {

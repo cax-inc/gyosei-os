@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json() as { email: string }
     const resend = new Resend(process.env.RESEND_API_KEY)
-    console.log('[onboard/magic] RESEND_API_KEY prefix:', process.env.RESEND_API_KEY?.slice(0, 10))
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: '正しいメールアドレスを入力してください' }, { status: 400 })

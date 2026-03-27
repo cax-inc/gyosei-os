@@ -3,11 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { createSessionToken, sessionCookieOptions } from '@/lib/session'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(req: NextRequest) {
   try {
     const { slug, name, email, plan, reviewer } = await req.json() as { slug: string; name: string; email: string; plan?: string; reviewer?: string }
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     if (!slug || !name || !email) {
       return NextResponse.json({ error: '入力内容を確認してください' }, { status: 400 })

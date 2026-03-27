@@ -11,13 +11,13 @@ import type { GenerateInput, UserTestimonial } from '@/lib/ai-site/types'
 
 // ---- ステップ定義 ----
 
-type StepId = 'firmName' | 'ownerName' | 'ownerBio' | 'services' | 'serviceAreas' | 'strengths' | 'styles'
+type StepId = 'firmName' | 'ownerName' | 'ownerBio' | 'services' | 'serviceAreas' | 'strengths' | 'styles' | 'lineSns' | 'facebookSns'
 
 interface Step {
   id: StepId
   question: string
   subtext?: string
-  type: 'text' | 'checkbox' | 'select' | 'textarea' | 'testimonials' | 'area-select' | 'strength-select'
+  type: 'text' | 'url' | 'checkbox' | 'select' | 'textarea' | 'testimonials' | 'area-select' | 'strength-select'
   options?: string[]
   placeholder?: string
   maxLength?: number
@@ -77,6 +77,22 @@ const STEPS: Step[] = [
     options: STYLE_OPTIONS,
     required: false,
   },
+  {
+    id: 'lineSns',
+    question: 'LINE公式アカウントのURLはありますか？（任意）',
+    subtext: '入力すると、サイトの右下にLINEボタンが表示されます。スキップも可能です。',
+    type: 'url',
+    placeholder: 'https://lin.ee/xxxxxxx',
+    required: false,
+  },
+  {
+    id: 'facebookSns',
+    question: 'FacebookページのURLはありますか？（任意）',
+    subtext: '入力すると、サイトの右下にFacebookボタンが表示されます。スキップも可能です。',
+    type: 'url',
+    placeholder: 'https://www.facebook.com/yourpage',
+    required: false,
+  },
 ]
 
 // ---- 初期値 ----
@@ -91,6 +107,8 @@ const INITIAL_ANSWERS: GenerateInput = {
   strengths: '',
   styles: [],
   userTestimonials: [],
+  lineSns: '',
+  facebookSns: '',
 }
 
 // ---- お客様の声入力コンポーネント ----
@@ -614,6 +632,17 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
                   Enter 2回 または「次へ」で進む
                 </p>
               </>
+            )}
+
+            {currentStep.type === 'url' && (
+              <input
+                type="url"
+                value={currentValue as string}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder={currentStep.placeholder}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                autoFocus
+              />
             )}
 
             {currentStep.type === 'textarea' && (

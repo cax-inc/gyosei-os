@@ -623,7 +623,7 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent, init
       {showGuide && <UsageGuide onClose={() => setShowGuide(false)} />}
 
       {/* ── 上部バー（固定） ── */}
-      <div style={{
+      <div className="preview-topbar" style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         background: 'rgba(17,24,39,0.97)', backdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -631,24 +631,21 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent, init
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
         {/* 左 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, overflow: 'hidden' }}>
           <span style={{
             background: '#fbbf24', color: '#1f2937', fontSize: 10, fontWeight: 800,
-            padding: '3px 10px', borderRadius: 100, letterSpacing: '0.5px',
+            padding: '3px 10px', borderRadius: 100, letterSpacing: '0.5px', flexShrink: 0,
           }}>
             PREVIEW
           </span>
-          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', display: 'none' }} className="sm:inline">
-            {firmName}
-          </span>
           {saving && (
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>保存中…</span>
+            <span className="preview-hint" style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>保存中…</span>
           )}
           {!saving && showSaved && (
-            <span style={{ fontSize: 11, color: '#34d399' }}>✓ 保存しました</span>
+            <span className="preview-hint" style={{ fontSize: 11, color: '#34d399', whiteSpace: 'nowrap' }}>✓ 保存しました</span>
           )}
           {!saving && !showSaved && (
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>テキストをクリックして編集</span>
+            <span className="preview-hint" style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>テキストをクリックして編集</span>
           )}
         </div>
 
@@ -726,10 +723,11 @@ export function PreviewClient({ slug, firmName, prefecture, initialContent, init
           {/* 公開ボタン */}
           <button
             onClick={() => setShowPlanModal(true)}
+            className="preview-publish-btn"
             style={{
               background: '#6366f1', color: '#fff', fontWeight: 700,
               fontSize: 13, padding: '7px 18px', borderRadius: 8, border: 'none',
-              cursor: 'pointer', letterSpacing: '-0.2px',
+              cursor: 'pointer', letterSpacing: '-0.2px', whiteSpace: 'nowrap', flexShrink: 0,
             }}
           >
             サイトを公開する →

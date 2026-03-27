@@ -638,7 +638,7 @@ export function SiteTemplate({
       {th.heroLayout === 'split' && (
         <section style={{ background: th.bg, position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: -120, right: -120, width: 480, height: 480, borderRadius: '50%', background: `radial-gradient(circle, ${th.primary}08 0%, transparent 70%)`, pointerEvents: 'none' }} />
-          <div className="st-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center', padding: '80px 24px' }}>
+          <div className="st-container st-hero-split-grid">
             {/* 左: テキスト */}
             <div>
               <div style={{ marginBottom: 20 }}>
@@ -678,7 +678,6 @@ export function SiteTemplate({
               </div>
             </div>
           </div>
-          <style>{`.st-hero-split-grid { grid-template-columns: 1fr !important; } @media (max-width: 640px) { .st-hero-split-grid { display: flex !important; flex-direction: column !important; } }`}</style>
         </section>
       )}
 
@@ -999,6 +998,53 @@ export function SiteTemplate({
           <ContactForm siteSlug={siteSlug} />
         </div>
       </section>
+
+      {/* ── フローティング SNS ボタン ── */}
+      {(content.social?.line || content.social?.facebook) && (
+        <div style={{
+          position: 'fixed', right: 20, bottom: 24, zIndex: 50,
+          display: 'flex', flexDirection: 'column', gap: 12,
+        }}>
+          {content.social?.line && (
+            <a
+              href={content.social.line}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 52, height: 52, borderRadius: '50%',
+                background: '#06C755',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
+                textDecoration: 'none', flexShrink: 0,
+              }}
+              aria-label="LINE公式アカウント"
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C6.48 2 2 6.03 2 11c0 3.27 1.82 6.14 4.58 7.89.2.12.29.35.22.57l-.55 2.01c-.08.3.22.56.5.42l2.33-1.22c.14-.07.3-.09.45-.05.62.17 1.28.27 1.97.27 5.52 0 10-4.03 10-9S17.52 2 12 2zM8 13H7v-4h1v4zm3 0h-1V9h1v4zm3 0h-1V9h1v4z"/>
+              </svg>
+            </a>
+          )}
+          {content.social?.facebook && (
+            <a
+              href={content.social.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 52, height: 52, borderRadius: '50%',
+                background: '#1877F2',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
+                textDecoration: 'none', flexShrink: 0,
+              }}
+              aria-label="Facebookページ"
+            >
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+                <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+              </svg>
+            </a>
+          )}
+        </div>
+      )}
 
       {/* ── Footer ── */}
       <footer className="st-container" style={{ padding: '48px 0', background: '#f9fafb', borderTop: '1px solid #f3f4f6', textAlign: 'center' }}>

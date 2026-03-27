@@ -22,6 +22,10 @@ export interface GenerateInput {
   userTestimonials?: UserTestimonial[]
   /** 問い合わせ通知先メール（必須: 問い合わせが来たときに届く） */
   ownerEmail: string
+  /** LINE公式アカウントURL（任意） */
+  lineSns?: string
+  /** FacebookページURL（任意） */
+  facebookSns?: string
 }
 
 export interface HeroContent {

@@ -13,13 +13,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '正しいメールアドレスを入力してください' }, { status: 400 })
     }
 
-    // 登録済みユーザーのみ許可
-    const site = await prisma.aiSite.findFirst({ where: { ownerEmail: email } })
-    if (!site) {
-      // セキュリティ: 存在しない場合も同じレスポンスを返す
-      return NextResponse.json({ success: true })
-    }
-
     // 古いトークンをすべて削除（期限切れ・使用済みも含む）
     await prisma.magicToken.deleteMany({
       where: { email },
@@ -40,7 +33,7 @@ export async function POST(req: NextRequest) {
 
     const loginUrl = `${appUrl}/api/auth/verify?token=${token}`
 
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from: process.env.RESEND_FROM ?? 'noreply@webseisei.com',
       to: email,
       subject: '【AI集客OS】ログインリンク',
@@ -55,6 +48,11 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     })
+
+    if (sendError) {
+      console.error('[magic] Resend送信エラー:', sendError)
+      return NextResponse.json({ error: 'メールの送信に失敗しました。しばらくしてから再試行してください。' }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {

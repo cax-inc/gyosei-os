@@ -123,6 +123,17 @@ export async function POST(req: NextRequest) {
     content: t.content,
   }))
 
+  // SNSリンクをウィザード入力から設定
+  const lineUrl = validInput.lineSns?.trim() || undefined
+  const facebookUrl = validInput.facebookSns?.trim() || undefined
+  if (lineUrl || facebookUrl) {
+    siteContent.social = {
+      ...(siteContent.social ?? {}),
+      line: lineUrl,
+      facebook: facebookUrl,
+    }
+  }
+
   // ---- ④ DB保存（以降の表示はここから読む） ----
 
   let site: { id: string; slug: string }

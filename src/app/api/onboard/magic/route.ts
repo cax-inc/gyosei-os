@@ -14,9 +14,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '正しいメールアドレスを入力してください' }, { status: 400 })
     }
 
-    // 古いトークンを無効化
+    // 古いトークンをすべて削除（期限切れ・使用済みも含む）
     await prisma.magicToken.deleteMany({
-      where: { email, usedAt: null, expiresAt: { gt: new Date() } },
+      where: { email },
     })
 
     const token = crypto.randomBytes(32).toString('hex')
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     const verifyUrl = `${baseUrl}/api/auth/verify?token=${token}&next=/onboard/questions`
 
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from: process.env.RESEND_FROM ?? 'noreply@webseisei.com',
       to: email,
       subject: '【webseisei】ログイン確認メール',
@@ -47,6 +47,11 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     })
+
+    if (sendError) {
+      console.error('[onboard/magic] Resend送信エラー:', sendError)
+      return NextResponse.json({ error: 'メールの送信に失敗しました。しばらくしてから再試行してください。' }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {

@@ -11,7 +11,7 @@ import type { GenerateInput, UserTestimonial } from '@/lib/ai-site/types'
 
 // ---- ステップ定義 ----
 
-type StepId = 'firmName' | 'ownerName' | 'ownerBio' | 'services' | 'serviceAreas' | 'strengths' | 'styles' | 'lineSns' | 'facebookSns'
+type StepId = 'firmName' | 'ownerName' | 'ownerBio' | 'services' | 'serviceAreas' | 'strengths' | 'styles'
 
 interface Step {
   id: StepId
@@ -77,22 +77,6 @@ const STEPS: Step[] = [
     options: STYLE_OPTIONS,
     required: false,
   },
-  {
-    id: 'lineSns',
-    question: 'LINE公式アカウントのURLはありますか？（任意）',
-    subtext: '入力すると、サイトの右下にLINEボタンが表示されます。スキップも可能です。',
-    type: 'url',
-    placeholder: 'https://lin.ee/xxxxxxx',
-    required: false,
-  },
-  {
-    id: 'facebookSns',
-    question: 'FacebookページのURLはありますか？（任意）',
-    subtext: '入力すると、サイトの右下にFacebookボタンが表示されます。スキップも可能です。',
-    type: 'url',
-    placeholder: 'https://www.facebook.com/yourpage',
-    required: false,
-  },
 ]
 
 // ---- 初期値 ----
@@ -110,6 +94,9 @@ const INITIAL_ANSWERS: GenerateInput = {
   lineSns: '',
   facebookSns: '',
 }
+
+// NOTE: lineSns/facebookSns are kept in GenerateInput for backward compatibility
+// but no longer asked in the wizard. Users can add them later from the dashboard.
 
 // ---- お客様の声入力コンポーネント ----
 

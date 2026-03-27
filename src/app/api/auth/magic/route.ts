@@ -3,11 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { Resend } from 'resend'
 import crypto from 'crypto'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(req: NextRequest) {
   try {
     const { email } = await req.json() as { email: string }
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     if (!email || !email.includes('@')) {
       return NextResponse.json({ error: '正しいメールアドレスを入力してください' }, { status: 400 })

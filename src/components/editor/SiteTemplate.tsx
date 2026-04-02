@@ -410,6 +410,7 @@ export function SiteTemplate({
   const { hero, services, profile, faq, cta } = content
   const pricing = content.pricing ?? DEFAULT_PRICING
   const area = content.area
+  const map = content.map
   const testimonials = content.testimonials ?? []
   const prefLabel = content.prefectureLabel ?? `${prefecture}の行政書士`
   const pricingCtaText = content.pricingCtaText ?? '無料相談はこちら →'
@@ -890,6 +891,27 @@ export function SiteTemplate({
             <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 24 }}>
               ※ 上記以外のエリアもご相談ください。オンライン対応も承っています。
             </p>
+          </div>
+        </section>
+      )}
+
+      {/* ── Map（Googleマップ） ── */}
+      {map?.address && (
+        <section id="map" className="st-section" style={{ background: '#fff', borderTop: '1px solid #f3f4f6' }}>
+          <div className="st-container">
+            <span style={sectionLabel}>Access</span>
+            <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 20 }}>アクセス</h2>
+            <p style={{ fontSize: 15, color: '#374151', marginBottom: 20 }}>{map.address}</p>
+            <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+              <iframe
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(map.address)}&output=embed&z=15`}
+                width="100%"
+                height="350"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
           </div>
         </section>
       )}

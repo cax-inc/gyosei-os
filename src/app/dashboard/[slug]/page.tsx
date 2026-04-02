@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { PublishButton } from '@/components/dashboard/PublishButton'
 import { UnpublishButton } from '@/components/dashboard/UnpublishButton'
 import { SocialLinksEditor } from '@/components/dashboard/SocialLinksEditor'
+import { MapAddressEditor } from '@/components/dashboard/MapAddressEditor'
 import type { SiteContent } from '@/lib/ai-site/types'
 
 interface Props {
@@ -147,6 +148,11 @@ export default async function DashboardPage({ params }: Props) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Googleマップ設定 */}
+      <div className="mt-6">
+        <MapAddressEditor slug={slug} initial={siteContent.map?.address ?? ''} />
       </div>
 
       {/* SNSリンク設定（月額プランのみ） */}

@@ -84,6 +84,10 @@ export interface SocialLinks {
   instagram?: string
 }
 
+export interface MapLocation {
+  address: string
+}
+
 export interface SiteContent {
   hero: HeroContent
   services: ServiceContent[]
@@ -99,6 +103,8 @@ export interface SiteContent {
   pricingCtaText?: string
   /** SNSリンク（月額プランのみ設定可能） */
   social?: SocialLinks
+  /** Googleマップ表示用の事務所住所 */
+  map?: MapLocation
 }
 
 export interface GenerateResult {

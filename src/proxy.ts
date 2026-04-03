@@ -49,12 +49,6 @@ export default async function proxy(request: NextRequest) {
       pathname.startsWith('/onboard') ||
       pathname.startsWith('/api/')
 
-    // 認証済みでloginページ → /dashboardへ（verify APIがslugを解決する）
-    if (session && pathname.startsWith('/login')) {
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
-    }
-
     // 未認証でprotectedページ → /loginへ
     if (!session && !isPublicPath) {
       url.pathname = '/login'

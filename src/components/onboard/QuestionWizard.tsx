@@ -456,6 +456,7 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedSlug, setGeneratedSlug] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [existingDraftSlug, setExistingDraftSlug] = useState<string | null>(null)
   const lastEnterRef = useRef<number>(0)
 
   const currentStep = STEPS[stepIndex]
@@ -507,27 +508,48 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
 
   // ---- 生成 ----
 
-  const handleGenerate = useCallback(async () => {
+  const handleGenerate = useCallback(async (overwrite = false) => {
     setIsGenerating(true)
     setError(null)
+    setExistingDraftSlug(null)
 
     try {
       const res = await fetch('/api/onboard/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(answers),
+        body: JSON.stringify({ ...answers, overwrite }),
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error((data as { error?: string }).error ?? '生成に失敗しました')
+
+      const data = await res.json() as {
+        slug?: string
+        error?: string
+        existingPaid?: boolean
+        existingDraft?: boolean
       }
-      const data = await res.json() as { slug: string }
-      setGeneratedSlug(data.slug)
+
+      // 決済済みサイトが存在 → ダッシュボードへ
+      if (data.existingPaid && data.slug) {
+        router.push(`/dashboard/${data.slug}`)
+        return
+      }
+
+      // 別入力のドラフトが存在 → 上書き確認
+      if (data.existingDraft && data.slug) {
+        setExistingDraftSlug(data.slug)
+        setIsGenerating(false)
+        return
+      }
+
+      if (!res.ok) {
+        throw new Error(data.error ?? '生成に失敗しました')
+      }
+
+      setGeneratedSlug(data.slug!)
     } catch (err) {
       setError(err instanceof Error ? err.message : '予期しないエラーが発生しました')
       setIsGenerating(false)
     }
-  }, [answers])
+  }, [answers, router])
 
   // ---- 生成完了後のリダイレクト ----
 
@@ -536,6 +558,56 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
       router.push(`/onboard/preview/${generatedSlug}`)
     }
   }, [generatedSlug, router])
+
+  // ---- 上書き確認UI ----
+
+  if (existingDraftSlug) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(150deg, #eef2ff 0%, #f0fdf4 50%, #fdf4ff 100%)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24, fontFamily: "'Inter','Helvetica Neue',Arial,'Hiragino Sans',sans-serif",
+      }}>
+        <div style={{
+          background: '#fff', borderRadius: 20, padding: 'clamp(32px, 5vw, 48px)',
+          maxWidth: 480, width: '100%', textAlign: 'center',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.06)', border: '1px solid #e5e7eb',
+        }}>
+          <p style={{ fontSize: 40, marginBottom: 16 }}>📝</p>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#111827', marginBottom: 8 }}>
+            作成中のサイトがあります
+          </h2>
+          <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 32 }}>
+            このメールアドレスで作成したサイトが既にあります。<br />
+            新しい内容で上書きしますか？
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <button
+              onClick={() => void handleGenerate(true)}
+              style={{
+                padding: '14px', borderRadius: 12, border: 'none',
+                background: '#6366f1', color: '#fff',
+                fontSize: 15, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              上書きして新しく作る
+            </button>
+            <button
+              onClick={() => router.push(`/onboard/preview/${existingDraftSlug}`)}
+              style={{
+                padding: '14px', borderRadius: 12,
+                border: '1.5px solid #e5e7eb', background: '#fff', color: '#374151',
+                fontSize: 15, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              既存のサイトを編集する
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ---- 生成中UI ----
 

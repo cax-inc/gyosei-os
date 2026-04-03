@@ -11,6 +11,13 @@ export const maxDuration = 60
 /**
  * POST /api/onboard/generate
  *
+ * ── 1メール1サイトの原則 ─────────────────────────────────────
+ * 同一メールで既にAiSiteが存在する場合:
+ *   - 決済済み → { existingPaid: true, slug } を返す
+ *   - 同一入力 → 既存slugをそのまま返す
+ *   - 別入力   → { existingDraft: true, slug } を返す（上書き確認用）
+ *   - overwrite: true が送られたら既存サイトを上書き
+ *
  * ── AIコスト制御 ──────────────────────────────────────────────
  * Claude APIはこのエンドポイント（初回生成）のみ呼ぶ。
  * 同一入力のハッシュが既にDBに存在する場合は AI を呼ばずキャッシュを返す。
@@ -27,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   // ---- バリデーション ----
 
-  const input = body as Partial<GenerateInput>
+  const input = body as Partial<GenerateInput> & { overwrite?: boolean }
 
   if (!input.firmName?.trim()) {
     return NextResponse.json({ error: '事務所名は必須です' }, { status: 400 })
@@ -49,6 +56,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '通知先メールアドレスは必須です' }, { status: 400 })
   }
 
+  const overwrite = input.overwrite === true
+
   const validInput: GenerateInput = {
     firmName:         input.firmName.trim(),
     ownerName:        input.ownerName.trim(),
@@ -63,8 +72,43 @@ export async function POST(req: NextRequest) {
     ),
   }
 
-  // ---- ① キャッシュチェック（同一入力の重複AI呼び出しを防ぐ） ----
-  // 入力をハッシュ化し、既存の生成結果がDBにあればAI呼び出しをスキップする。
+  // ---- ① 1メール1サイトチェック ----
+
+  const existingSite = await prisma.aiSite.findFirst({
+    where: { ownerEmail: validInput.ownerEmail },
+    select: { id: true, slug: true, plan: true, promptHash: true },
+  })
+
+  if (existingSite) {
+    // 決済済みサイト → 編集画面へ誘導
+    if (existingSite.plan) {
+      return NextResponse.json({
+        existingPaid: true,
+        slug: existingSite.slug,
+      })
+    }
+
+    const promptHash = buildSitePromptHash(validInput)
+
+    // 同一入力 → 既存サイトをそのまま返す
+    if (existingSite.promptHash === promptHash) {
+      return NextResponse.json({ slug: existingSite.slug, siteId: existingSite.id, cached: true })
+    }
+
+    // 別入力 & 上書き未承認 → 確認を求める
+    if (!overwrite) {
+      return NextResponse.json({
+        existingDraft: true,
+        slug: existingSite.slug,
+      })
+    }
+
+    // 別入力 & 上書き承認済み → 既存サイトを削除して再生成
+    await prisma.aiSite.delete({ where: { id: existingSite.id } })
+    console.log(`[generate] 既存サイトを上書き削除: slug=${existingSite.slug}`)
+  }
+
+  // ---- ② キャッシュチェック（同一入力の重複AI呼び出しを防ぐ） ----
 
   const promptHash = buildSitePromptHash(validInput)
 
@@ -78,7 +122,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ slug: cached.slug, siteId: cached.id, cached: true })
   }
 
-  // ---- ② スラッグ生成（衝突回避） ----
+  // ---- ③ スラッグ生成（衝突回避） ----
 
   const prefecture = derivePrefecture(validInput.serviceAreas)
   let slug = buildSlug(prefecture)
@@ -88,9 +132,7 @@ export async function POST(req: NextRequest) {
     slug = buildSlug(prefecture)
   }
 
-  // ---- ③ AI生成（Claude API呼び出し: ここのみ） ----
-  // キャッシュミス時のみ実行される。生成結果は次のステップでDBに保存し、
-  // 以降の表示はすべてDBから読む。AIの再呼び出しは発生しない。
+  // ---- ④ AI生成（Claude API呼び出し: ここのみ） ----
 
   let siteContent: Awaited<ReturnType<typeof generateSiteContent>>
   let seoKeywords: string[]
@@ -134,7 +176,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ---- ④ DB保存（以降の表示はここから読む） ----
+  // ---- ⑤ DB保存（以降の表示はここから読む） ----
 
   let site: { id: string; slug: string }
   try {
@@ -143,6 +185,7 @@ export async function POST(req: NextRequest) {
         slug,
         firmName:      validInput.firmName,
         ownerEmail:    validInput.ownerEmail,
+        ownerName:     validInput.ownerName,
         prefecture:    prefecture,
         services:      validInput.services,
         strengths:     validInput.strengths,
@@ -153,7 +196,7 @@ export async function POST(req: NextRequest) {
         seoKeywords:   seoKeywords as any,
         status:        'draft',
         autoReply:     true,
-        promptHash,          // キャッシュキー保存
+        promptHash,
       },
       select: { id: true, slug: true },
     })

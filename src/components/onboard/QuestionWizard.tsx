@@ -239,7 +239,7 @@ function StrengthsInput({ value, onChange }: { value: string; onChange: (v: stri
     <div className="space-y-2">
       {STRENGTH_OPTIONS.map(opt => <CheckButton key={opt} opt={opt} />)}
 
-      <p className="text-xs font-semibold text-gray-500 pt-2 pb-1">🌐 対応言語</p>
+      <p className="text-xs font-semibold text-gray-500 pt-2 pb-1">🌐 日本語以外で対応可能な言語</p>
       <div className="grid grid-cols-2 gap-2">
         {LANGUAGE_OPTIONS.map(opt => <CheckButton key={opt} opt={opt} />)}
       </div>

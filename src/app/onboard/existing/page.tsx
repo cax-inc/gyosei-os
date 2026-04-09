@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 type AuditItem = { key: string; label: string; score: number; max: number; message: string }
@@ -207,6 +208,30 @@ export default function ExistingPage() {
               <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 14, lineHeight: 1.6 }}>
                 ※ HTMLの公開情報のみを元にした簡易診断です。詳しい改善提案はお問い合わせください。
               </p>
+
+              {audit.score < 95 && (
+                <Link href="/onboard/create" style={{ textDecoration: 'none' }}>
+                  <div style={{
+                    marginTop: 20, padding: '20px 22px', borderRadius: 14,
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14,
+                  }}>
+                    <div style={{ minWidth: 0, color: '#fff' }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.9, marginBottom: 4 }}>
+                        webseiseiでサイトを作り直すと
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.4 }}>
+                        {audit.score}点 → <span style={{ fontSize: 24 }}>約95点</span> にアップ
+                      </div>
+                      <div style={{ fontSize: 12, opacity: 0.9, marginTop: 4 }}>
+                        5分・無料で試せます
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 22, color: '#fff', flexShrink: 0 }}>→</span>
+                  </div>
+                </Link>
+              )}
             </div>
           )}
         </div>

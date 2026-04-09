@@ -28,7 +28,7 @@ const STEPS: Step[] = [
   {
     id: 'firmName',
     question: '事務所名を教えてください',
-    subtext: 'まだ決まっていない場合は、仮の名前でもOKです。',
+    subtext: '後から修正できますので、まだ事務所名が決まっていない場合は、仮の名前でも問題ありません。',
     type: 'text',
     placeholder: '例：東京行政書士事務所',
     required: true,

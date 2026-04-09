@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 
+type AuditItem = { key: string; label: string; score: number; max: number; message: string }
+type AuditResult = { url: string; score: number; grade: string; title: string; items: AuditItem[] }
+
 export default function ExistingPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -9,6 +12,38 @@ export default function ExistingPage() {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+
+  const [auditUrl, setAuditUrl] = useState('')
+  const [auditing, setAuditing] = useState(false)
+  const [auditError, setAuditError] = useState('')
+  const [audit, setAudit] = useState<AuditResult | null>(null)
+
+  const handleAudit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAuditing(true)
+    setAuditError('')
+    setAudit(null)
+    try {
+      const res = await fetch('/api/onboard/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: auditUrl }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setAuditError(data.error || '診断に失敗しました')
+      } else {
+        setAudit(data)
+      }
+    } catch {
+      setAuditError('診断に失敗しました。時間をおいて再度お試しください。')
+    } finally {
+      setAuditing(false)
+    }
+  }
+
+  const gradeColor = (g: string) =>
+    g === 'S' ? '#10b981' : g === 'A' ? '#22c55e' : g === 'B' ? '#6366f1' : g === 'C' ? '#f59e0b' : '#ef4444'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,6 +116,131 @@ export default function ExistingPage() {
               {text}
             </div>
           ))}
+        </div>
+
+        {/* サイト診断 */}
+        <div style={{
+          background: '#fff', borderRadius: 20, padding: 'clamp(28px, 4vw, 40px)',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.05)',
+          marginBottom: 24,
+        }}>
+          <h2 style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
+            無料サイト診断
+          </h2>
+          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
+            URLを入力するだけで、現在のサイトを100点満点で採点します。
+          </p>
+
+          <form onSubmit={handleAudit} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+            <input
+              type="text"
+              value={auditUrl}
+              onChange={e => setAuditUrl(e.target.value)}
+              required
+              placeholder="https://your-site.com"
+              style={{
+                flex: 1, padding: '11px 14px', borderRadius: 8,
+                border: '1.5px solid #e5e7eb', fontSize: 14,
+                outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+            <button
+              type="submit"
+              disabled={auditing || !auditUrl}
+              style={{
+                padding: '11px 18px', borderRadius: 8, border: 'none',
+                background: auditing || !auditUrl ? '#e5e7eb' : '#6366f1',
+                color: auditing || !auditUrl ? '#9ca3af' : '#fff',
+                fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap',
+                cursor: auditing || !auditUrl ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {auditing ? '診断中…' : '診断する'}
+            </button>
+          </form>
+
+          {auditError && (
+            <p style={{ fontSize: 13, color: '#ef4444', marginTop: 4 }}>{auditError}</p>
+          )}
+
+          {audit && (
+            <div style={{ marginTop: 8 }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 20,
+                padding: '20px 24px', borderRadius: 14,
+                background: 'linear-gradient(135deg, #f5f3ff, #eef2ff)',
+                border: '1px solid #e0e7ff', marginBottom: 20,
+              }}>
+                <div style={{
+                  width: 84, height: 84, borderRadius: '50%',
+                  background: '#fff', border: `4px solid ${gradeColor(audit.grade)}`,
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <div style={{ fontSize: 26, fontWeight: 800, color: '#111827', lineHeight: 1 }}>
+                    {audit.score}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#6b7280', marginTop: 2 }}>/ 100</div>
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{
+                    display: 'inline-block', padding: '3px 12px', borderRadius: 100,
+                    background: gradeColor(audit.grade), color: '#fff',
+                    fontSize: 12, fontWeight: 700, marginBottom: 6,
+                  }}>
+                    評価 {audit.grade}
+                  </div>
+                  <div style={{
+                    fontSize: 13, color: '#374151', overflow: 'hidden',
+                    textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {audit.title || audit.url}
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {audit.items.map(item => {
+                  const ratio = item.score / item.max
+                  const color = ratio >= 0.8 ? '#10b981' : ratio >= 0.5 ? '#f59e0b' : '#ef4444'
+                  return (
+                    <div key={item.key} style={{
+                      border: '1px solid #e5e7eb', borderRadius: 10,
+                      padding: '12px 14px',
+                    }}>
+                      <div style={{
+                        display: 'flex', justifyContent: 'space-between',
+                        alignItems: 'center', marginBottom: 6,
+                      }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#111827' }}>
+                          {item.label}
+                        </span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color }}>
+                          {item.score} / {item.max}
+                        </span>
+                      </div>
+                      <div style={{
+                        height: 4, background: '#f3f4f6', borderRadius: 2,
+                        overflow: 'hidden', marginBottom: 6,
+                      }}>
+                        <div style={{
+                          width: `${ratio * 100}%`, height: '100%', background: color,
+                        }} />
+                      </div>
+                      <div style={{ fontSize: 12, color: '#6b7280', lineHeight: 1.6 }}>
+                        {item.message}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 14, lineHeight: 1.6 }}>
+                ※ HTMLの公開情報のみを元にした簡易診断です。詳しい改善提案はお問い合わせください。
+              </p>
+            </div>
+          )}
         </div>
 
         <div style={{

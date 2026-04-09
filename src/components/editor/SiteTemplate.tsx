@@ -292,7 +292,8 @@ function FaqItem({ question, answer, editable, onChangeQ, onChangeA, onDelete }:
 
 // ─── Contact フォーム ─────────────────────────────────────────────────────────
 
-function ContactForm({ siteSlug }: { siteSlug: string }) {
+function ContactForm({ siteSlug, primaryColor }: { siteSlug: string; primaryColor?: string }) {
+  const primary = primaryColor || '#6366f1'
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
 
@@ -366,7 +367,7 @@ function ContactForm({ siteSlug }: { siteSlug: string }) {
       )}
       <button type="submit" disabled={status === 'sending'}
         style={{
-          background: '#6366f1', color: '#fff', fontWeight: 700,
+          background: primary, color: '#fff', fontWeight: 700,
           padding: '14px', borderRadius: 10, fontSize: 15, border: 'none',
           cursor: 'pointer', opacity: status === 'sending' ? 0.7 : 1,
           letterSpacing: '-0.2px',
@@ -1045,7 +1046,7 @@ export function SiteTemplate({
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <span style={sectionLabel}>Contact</span>
           <h2 className={sectionTitleClass} style={{ ...sectionTitle, marginBottom: 8 }}>お問い合わせ</h2>
-          <ContactForm siteSlug={siteSlug} />
+          <ContactForm siteSlug={siteSlug} primaryColor={th.primary} />
         </div>
       </section>
 

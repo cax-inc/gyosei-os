@@ -150,7 +150,7 @@ function CropModal({ imageSrc, onConfirm, onCancel }: {
 
 // ─── ProfilePhoto アップロード ────────────────────────────────────────────────
 
-const DEFAULT_PROFILE_PHOTO = '/images/stock/34354738_s.jpg'
+const DEFAULT_PROFILE_PHOTO = ''
 
 function ProfilePhotoUpload({ src, editable, onChange, siteSlug }: {
   src?: string; editable: boolean; onChange: (url: string) => void; siteSlug?: string
@@ -207,8 +207,17 @@ function ProfilePhotoUpload({ src, editable, onChange, siteSlug }: {
         style={{ width: 180, height: 220, borderRadius: 16 }}
         onClick={() => editable && fileRef.current?.click()}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={displaySrc} alt="プロフィール写真" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+        {displaySrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={displaySrc} alt="プロフィール写真" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" fill="#d1d5db" />
+              <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" fill="#d1d5db" />
+            </svg>
+          </div>
+        )}
         {isDefault && editable && (
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -576,17 +585,8 @@ export function SiteTemplate({
     heroLayout: theme?.style.heroLayout  ?? 'left' as 'left' | 'center' | 'fullbg' | 'split',
   }
 
-  // fullbg テンプレート別ヒーロー背景写真
-  const FULLBG_HERO_PHOTOS: Record<string, string> = {
-    'trustful-navy':    '/images/stock/34039686_s.jpg',
-    'midnight-pro':     '/images/stock/34039686_s.jpg',
-    'deep-amethyst':    '/images/stock/34039686_s.jpg',
-    'ocean-deep':       '/images/stock/34039686_s.jpg',
-    'elegant-charcoal': '/images/stock/34156942_s.jpg',
-    'civic-blue':       '/images/stock/34156942_s.jpg',
-    'carbon-pro':       '/images/stock/34156942_s.jpg',
-  }
-  const fullbgHeroPhoto = theme?.id ? (FULLBG_HERO_PHOTOS[theme.id] ?? '/images/stock/34039686_s.jpg') : '/images/stock/34039686_s.jpg'
+  // ヒーロー背景（写真なし、グラデーションで対応）
+  const heroBgGradient = `linear-gradient(135deg, ${th.primary}18 0%, ${th.primary}08 50%, ${th.accent ?? th.primary}10 100%)`
 
   // ── スタイル定数 ────────────────────────────────────────────────────────────
   const sectionLabel: React.CSSProperties = {
@@ -640,9 +640,7 @@ export function SiteTemplate({
 
       {/* ── Hero ── */}
       {th.heroLayout === 'left' && (
-        <section style={{ position: 'relative', overflow: 'hidden', backgroundImage: `url(${fullbgHeroPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-          {/* 背景オーバーレイ（テキストが見えるように薄くする） */}
-          <div style={{ position: 'absolute', inset: 0, background: th.bg, opacity: 0.88, pointerEvents: 'none' }} />
+        <section style={{ position: 'relative', overflow: 'hidden', background: heroBgGradient }}>
           <div style={{ position: 'absolute', top: -160, right: -160, width: 560, height: 560, borderRadius: '50%', background: `radial-gradient(circle, ${th.primary}10 0%, transparent 70%)`, pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', bottom: -100, left: -100, width: 400, height: 400, borderRadius: '50%', background: `radial-gradient(circle, ${th.accent}08 0%, transparent 70%)`, pointerEvents: 'none' }} />
           <div className="st-container st-hero-inner" style={{ position: 'relative', zIndex: 1 }}>
@@ -670,9 +668,7 @@ export function SiteTemplate({
       )}
 
       {th.heroLayout === 'center' && (
-        <section style={{ position: 'relative', overflow: 'hidden', textAlign: 'center', backgroundImage: `url(${fullbgHeroPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-          {/* 背景オーバーレイ（テキストが見えるように薄くする） */}
-          <div style={{ position: 'absolute', inset: 0, background: th.bg, opacity: 0.88, pointerEvents: 'none' }} />
+        <section style={{ position: 'relative', overflow: 'hidden', textAlign: 'center', background: heroBgGradient }}>
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 800, height: 800, borderRadius: '50%', background: `radial-gradient(circle, ${th.primary}08 0%, transparent 65%)`, pointerEvents: 'none' }} />
           <div className="st-container st-hero-inner" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ marginBottom: 24 }}>
@@ -700,10 +696,8 @@ export function SiteTemplate({
 
       {th.heroLayout === 'fullbg' && (
         <section style={{ position: 'relative', overflow: 'hidden' }}>
-          {/* 背景写真 */}
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${fullbgHeroPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center top', pointerEvents: 'none' }} />
-          {/* カラーオーバーレイ */}
-          <div style={{ position: 'absolute', inset: 0, background: th.primary, opacity: 0.82, pointerEvents: 'none' }} />
+          {/* カラー背景 */}
+          <div style={{ position: 'absolute', inset: 0, background: th.primary, pointerEvents: 'none' }} />
           <div className="st-container st-hero-inner" style={{ position: 'relative', zIndex: 1 }}>
             <div style={{ marginBottom: 24 }}>
               <ET as="span" value={prefLabel} onChange={editable ? upPrefectureLabel : undefined} style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,0.75)', background: 'rgba(255,255,255,0.12)', padding: '5px 14px', borderRadius: 100, border: '1px solid rgba(255,255,255,0.2)' }} />
@@ -757,18 +751,24 @@ export function SiteTemplate({
             {/* 右: 代表者写真 */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end' }}>
               <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
-                <img
-                  src={profile.profilePhotoUrl || DEFAULT_PROFILE_PHOTO}
-                  alt={`${firmName} 代表`}
-                  style={{ width: '100%', borderRadius: 20, objectFit: 'cover', objectPosition: 'top', aspectRatio: '3/4', boxShadow: `0 24px 64px ${th.primary}20`, display: 'block' }}
-                />
-                {!profile.profilePhotoUrl && (
+                {profile.profilePhotoUrl ? (
+                  <img
+                    src={profile.profilePhotoUrl}
+                    alt={`${firmName} 代表`}
+                    style={{ width: '100%', borderRadius: 20, objectFit: 'cover', objectPosition: 'top', aspectRatio: '3/4', boxShadow: `0 24px 64px ${th.primary}20`, display: 'block' }}
+                  />
+                ) : (
                   <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0,
-                    background: 'rgba(0,0,0,0.5)', borderRadius: '0 0 20px 20px',
-                    padding: '8px', textAlign: 'center',
+                    width: '100%', aspectRatio: '3/4', borderRadius: 20,
+                    background: `linear-gradient(135deg, ${th.primary}12, ${th.primary}06)`,
+                    border: `1px solid ${th.primary}15`,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12,
                   }}>
-                    <span style={{ fontSize: 11, color: '#fff', fontWeight: 600 }}>📷 フリー素材 · 差し替え可能</span>
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" fill={`${th.primary}30`} />
+                      <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" fill={`${th.primary}30`} />
+                    </svg>
+                    {editable && <span style={{ fontSize: 11, color: th.sub, fontWeight: 600 }}>写真を追加</span>}
                   </div>
                 )}
               </div>

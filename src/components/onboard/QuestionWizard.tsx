@@ -632,7 +632,7 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-lg lg:max-w-2xl">
         {/* プログレスバー */}
         <div className="mb-8">
           <div className="flex justify-between text-xs text-gray-400 mb-2">
@@ -648,13 +648,13 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
         </div>
 
         {/* カード */}
-        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-5 sm:p-8 lg:p-10">
           {/* AIアバター + 質問 */}
           <div className="flex items-start gap-4 mb-8">
             <AiAvatar size={56} />
             <div className="flex-1">
               <div className="bg-blue-50 rounded-2xl rounded-tl-none px-5 py-4">
-                <p className="text-gray-800 font-medium leading-relaxed">
+                <p className="text-gray-800 font-medium leading-relaxed lg:text-lg">
                   {currentStep.question}
                 </p>
                 {currentStep.subtext && (
@@ -675,7 +675,7 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
                   value={currentValue as string}
                   onChange={(e) => setValue(e.target.value)}
                   placeholder={currentStep.placeholder}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault()
@@ -700,7 +700,7 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
                 value={currentValue as string}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder={currentStep.placeholder}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 autoFocus
               />
             )}
@@ -713,7 +713,7 @@ export function QuestionWizard({ ownerEmail }: { ownerEmail: string }) {
                   placeholder={currentStep.placeholder}
                   maxLength={currentStep.maxLength}
                   rows={4}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   autoFocus
                 />
                 {currentStep.maxLength && (

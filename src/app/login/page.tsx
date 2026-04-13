@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 function LoginForm() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
+  const next = searchParams.get('next')
   const isOnboard = searchParams.get('from') === 'onboard'
 
   const [email, setEmail] = useState('')
@@ -19,7 +20,7 @@ function LoginForm() {
     await fetch('/api/auth/magic', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, next: isOnboard ? '/onboard/questions' : undefined }),
+      body: JSON.stringify({ email, next: next ?? (isOnboard ? '/onboard/questions' : undefined) }),
     })
 
     setLoading(false)

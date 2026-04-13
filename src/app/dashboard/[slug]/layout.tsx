@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getSession } from '@/lib/session'
 import { LogoutButton } from '@/components/dashboard/LogoutButton'
 import { siteUrl } from '@/lib/urls'
 
@@ -21,9 +22,15 @@ export default async function DashboardLayout({ children, params }: Props) {
 
   const site = await prisma.aiSite.findUnique({
     where: { slug },
-    select: { firmName: true, status: true },
+    select: { firmName: true, status: true, ownerEmail: true },
   })
   if (!site) notFound()
+
+  // 認証チェック: セッションがないか、ownerEmailが一致しなければログインへ
+  const session = await getSession()
+  if (!session || session.email !== site.ownerEmail) {
+    redirect(`/login?next=/dashboard/${slug}`)
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">

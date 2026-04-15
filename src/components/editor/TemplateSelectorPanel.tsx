@@ -57,23 +57,10 @@ interface TemplateSelectorPanelProps {
   onApply: (template: SiteTemplate) => void
 }
 
-type Category = 'すべて' | '信頼・格式' | 'シンプル' | '写真ヒーロー'
-
-const CATEGORY_MAP: Record<Category, string[]> = {
-  'すべて': [],
-  '信頼・格式': ['trustful-navy', 'elegant-charcoal', 'civic-blue', 'sky-reliable', 'ocean-deep', 'indigo-bold', 'midnight-pro'],
-  'シンプル': ['pure-minimal', 'steel-sharp', 'white-clean', 'white-serif'],
-  '写真ヒーロー': ['consult-warm', 'city-trust', 'city-modern', 'tower-navy', 'tower-slate'],
-}
 
 export function TemplateSelectorPanel({ isOpen, onClose, currentTemplateId, onApply }: TemplateSelectorPanelProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [appliedId, setAppliedId] = useState<string | null>(currentTemplateId ?? null)
-  const [category, setCategory] = useState<Category>('すべて')
-
-  const filtered = category === 'すべて'
-    ? GYOSEI_TEMPLATES
-    : GYOSEI_TEMPLATES.filter(t => CATEGORY_MAP[category].includes(t.id))
 
   if (!isOpen) return null
 
@@ -88,29 +75,12 @@ export function TemplateSelectorPanel({ isOpen, onClose, currentTemplateId, onAp
           </div>
           <button onClick={onClose} style={{ background: 'none', border: '1px solid #E5E7EB', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', color: '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid #F3F4F6', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {(['すべて', '信頼・格式', 'シンプル', '写真ヒーロー'] as Category[]).map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCategory(cat)}
-              style={{
-                padding: '5px 14px', borderRadius: '999px', fontSize: '12px', fontWeight: 600,
-                cursor: 'pointer', border: 'none',
-                background: category === cat ? '#111827' : '#F3F4F6',
-                color: category === cat ? '#fff' : '#6B7280',
-                transition: 'all 0.15s',
-              }}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
         <div
-          style={{ height: 'calc(100vh - 160px)', overflowY: 'scroll', padding: '12px 12px', overscrollBehavior: 'contain' }}
+          style={{ height: 'calc(100vh - 110px)', overflowY: 'scroll', padding: '12px 12px', overscrollBehavior: 'contain' }}
           onWheel={e => e.stopPropagation()}
         >
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {filtered.map(t => {
+            {GYOSEI_TEMPLATES.map(t => {
               const isSelected = appliedId === t.id
               const isHovered = hoveredId === t.id
               return (
@@ -149,7 +119,6 @@ export function TemplateSelectorPanel({ isOpen, onClose, currentTemplateId, onAp
               )
             })}
           </div>
-          {filtered.length === 0 && <div style={{ textAlign: 'center', color: '#9CA3AF', fontSize: '13px', padding: '32px 0' }}>該当するテンプレートが見つかりません</div>}
         </div>
         <div style={{ padding: '12px 20px', borderTop: '1px solid #F3F4F6', fontSize: '11px', color: '#9CA3AF', textAlign: 'center' }}>クリックするとすぐ反映されます</div>
       </aside>

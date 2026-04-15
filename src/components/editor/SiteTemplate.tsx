@@ -508,23 +508,17 @@ export function SiteTemplate({
   const FULLBG_HERO_PHOTOS: Record<string, string> = {
     'trustful-navy':    '/images/stock/34039686_s.jpg',
     'midnight-pro':     '/images/stock/34039686_s.jpg',
-    'deep-amethyst':    '/images/stock/34039686_s.jpg',
     'ocean-deep':       '/images/stock/34039686_s.jpg',
     'elegant-charcoal': '/images/stock/34156942_s.jpg',
     'civic-blue':       '/images/stock/34156942_s.jpg',
-    'carbon-pro':       '/images/stock/34156942_s.jpg',
     // 相談シーン
     'consult-warm':     '/images/stock/33945329_s.jpg',
-    'consult-green':    '/images/stock/33945329_s.jpg',
-    'consult-plum':     '/images/stock/33945329_s.jpg',
     // ビル街で会話
     'city-trust':       '/images/stock/34039686_s.jpg',
     'city-modern':      '/images/stock/34039686_s.jpg',
-    'city-warm':        '/images/stock/34039686_s.jpg',
     // 高層ビル
     'tower-navy':       '/images/stock/34156942_s.jpg',
     'tower-slate':      '/images/stock/34156942_s.jpg',
-    'tower-emerald':    '/images/stock/34156942_s.jpg',
   }
   const fullbgHeroPhoto = theme?.id ? (FULLBG_HERO_PHOTOS[theme.id] ?? '/images/stock/34039686_s.jpg') : '/images/stock/34039686_s.jpg'
 

@@ -57,14 +57,13 @@ interface TemplateSelectorPanelProps {
   onApply: (template: SiteTemplate) => void
 }
 
-type Category = 'すべて' | '信頼・格式' | '親しみやすい' | 'モダン' | '写真ヒーロー'
+type Category = 'すべて' | '信頼・格式' | 'シンプル' | '写真ヒーロー'
 
 const CATEGORY_MAP: Record<Category, string[]> = {
   'すべて': [],
-  '信頼・格式': ['trustful-navy', 'elegant-charcoal', 'civic-blue', 'sky-reliable', 'deep-amethyst', 'ocean-deep', 'indigo-bold'],
-  '親しみやすい': ['calm-forest', 'warm-terracotta', 'sakura-soft', 'earth-natural', 'warm-ivory', 'moss-organic', 'sage-calm', 'rose-gold'],
-  'モダン': ['pure-minimal', 'midnight-pro', 'fresh-teal', 'steel-sharp', 'carbon-pro'],
-  '写真ヒーロー': ['consult-warm', 'consult-green', 'consult-plum', 'city-trust', 'city-modern', 'city-warm', 'tower-navy', 'tower-slate', 'tower-emerald'],
+  '信頼・格式': ['trustful-navy', 'elegant-charcoal', 'civic-blue', 'sky-reliable', 'ocean-deep', 'indigo-bold', 'midnight-pro'],
+  'シンプル': ['pure-minimal', 'steel-sharp', 'white-clean', 'white-serif'],
+  '写真ヒーロー': ['consult-warm', 'city-trust', 'city-modern', 'tower-navy', 'tower-slate'],
 }
 
 export function TemplateSelectorPanel({ isOpen, onClose, currentTemplateId, onApply }: TemplateSelectorPanelProps) {
@@ -85,12 +84,12 @@ export function TemplateSelectorPanel({ isOpen, onClose, currentTemplateId, onAp
         <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontSize: '16px', fontWeight: 700, color: '#111827' }}>🎨 デザインテンプレート</div>
-            <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '2px' }}>行政書士サイト向け 20種類</div>
+            <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '2px' }}>行政書士サイト向け 16種類</div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: '1px solid #E5E7EB', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', color: '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
         <div style={{ padding: '12px 16px', borderBottom: '1px solid #F3F4F6', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {(['すべて', '信頼・格式', '親しみやすい', 'モダン', '写真ヒーロー'] as Category[]).map(cat => (
+          {(['すべて', '信頼・格式', 'シンプル', '写真ヒーロー'] as Category[]).map(cat => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}

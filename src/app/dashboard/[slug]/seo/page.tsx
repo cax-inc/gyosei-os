@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { SeoGenerateButton } from '@/components/dashboard/SeoGenerateButton'
 import { SeoPageToggle } from '@/components/dashboard/SeoPageToggle'
+import { SeoPageDelete } from '@/components/dashboard/SeoPageDelete'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -68,6 +69,7 @@ export default async function SeoPage({ params }: Props) {
                       >
                         確認 →
                       </a>
+                      <SeoPageDelete pageId={page.id} keyword={page.keyword} />
                     </div>
                   </td>
                 </tr>

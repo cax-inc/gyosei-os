@@ -82,7 +82,6 @@ export interface TestimonialItem {
 export interface SocialLinks {
   line?: string
   facebook?: string
-  instagram?: string
 }
 
 export interface MapLocation {

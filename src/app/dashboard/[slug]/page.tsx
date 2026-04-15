@@ -21,21 +21,8 @@ export default async function DashboardPage({ params }: Props) {
 
   const site = await prisma.aiSite.findUnique({
     where: { slug },
-    include: {
-      _count: { select: { leads: true, seoPages: true } },
-    },
   })
   if (!site) notFound()
-
-  const totalLeads = site._count.leads
-  const totalSeoPages = site._count.seoPages
-
-  // 今月のリード数
-  const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-  const monthlyLeads = await prisma.aiSiteLead.count({
-    where: { siteId: site.id, createdAt: { gte: monthStart } },
-  })
 
   // 最近のリード（5件）
   const recentLeads = await prisma.aiSiteLead.findMany({
@@ -80,23 +67,6 @@ export default async function DashboardPage({ params }: Props) {
         </div>
       )}
 
-      {/* KPI カード */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: '総問い合わせ数', value: totalLeads, icon: '👤', color: 'blue' },
-          { label: '今月の問い合わせ', value: monthlyLeads, icon: '🗓', color: 'green' },
-          { label: 'SEOページ数', value: totalSeoPages, icon: '📄', color: 'purple' },
-          { label: '広告LP数', value: 0, icon: '📣', color: 'orange' },
-        ].map((card) => (
-          <div key={card.label} className="bg-white rounded-xl border border-gray-200 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-gray-500 font-medium">{card.label}</span>
-              <span className="text-xl">{card.icon}</span>
-            </div>
-            <p className="text-3xl font-extrabold text-gray-900">{card.value}</p>
-          </div>
-        ))}
-      </div>
 
       {/* 2カラムレイアウト */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

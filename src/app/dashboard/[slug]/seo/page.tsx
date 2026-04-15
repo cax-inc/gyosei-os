@@ -62,7 +62,7 @@ export default async function SeoPage({ params }: Props) {
                     <div className="flex items-center justify-end gap-3">
                       <SeoPageToggle pageId={page.id} currentStatus={page.status} />
                       <a
-                        href={`/seo/${encodeURIComponent(page.slug)}`}
+                        href={`/seo/${encodeURIComponent(page.slug)}?preview=1`}
                         target="_blank"
                         className="text-xs text-blue-600 hover:underline"
                       >

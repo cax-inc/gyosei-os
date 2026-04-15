@@ -4,9 +4,11 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { siteUrl } from '@/lib/urls'
+import { getSession } from '@/lib/session'
 
 interface Props {
   params: Promise<{ keyword: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -18,16 +20,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function SeoPage({ params }: Props) {
+export default async function SeoPage({ params, searchParams }: Props) {
   const { keyword } = await params
+  const sp = await searchParams
+  const isPreview = sp.preview === '1'
   const slug = decodeURIComponent(keyword)
 
   const page = await prisma.aiSeoPage.findFirst({
-    where: { slug, status: 'published' },
-    include: { site: { select: { firmName: true, prefecture: true, slug: true, services: true } } },
+    where: isPreview ? { slug } : { slug, status: 'published' },
+    include: { site: { select: { firmName: true, prefecture: true, slug: true, services: true, ownerEmail: true } } },
   })
 
   if (!page) notFound()
+
+  // プレビューモードはログイン済みオーナーのみ
+  if (isPreview) {
+    const session = await getSession()
+    if (!session || session.email !== page.site.ownerEmail) notFound()
+  }
 
   const content = page.content as {
     headline?: string
@@ -39,6 +49,12 @@ export default async function SeoPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* プレビューバナー */}
+      {isPreview && page.status !== 'published' && (
+        <div className="bg-yellow-400 text-yellow-900 text-center text-sm font-medium py-2">
+          下書きプレビュー — 公開するには管理画面から「公開」に切り替えてください
+        </div>
+      )}
       {/* ヒーロー */}
       <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white">
         <div className="max-w-3xl mx-auto px-6 py-20 text-center">

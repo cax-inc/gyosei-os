@@ -67,19 +67,6 @@ export default async function DashboardLayout({ children, params }: Props) {
         {/* フッター */}
         <div className="px-5 py-4 border-t border-gray-200 space-y-2">
           <Link
-            href={siteUrl(slug)}
-            target="_blank"
-            className="block text-xs text-blue-600 hover:underline"
-          >
-            🔗 公開サイトを見る
-          </Link>
-          <Link
-            href={`/onboard/preview/${slug}`}
-            className="block text-xs text-gray-400 hover:text-gray-600"
-          >
-            ← プレビューに戻る
-          </Link>
-          <Link
             href={`/dashboard/${slug}/settings`}
             className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600"
           >

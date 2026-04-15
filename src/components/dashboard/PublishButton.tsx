@@ -30,7 +30,7 @@ export function PublishButton({ slug }: Props) {
       disabled={isPublishing}
       className="px-5 py-2 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
     >
-      {isPublishing ? '公開中...' : '🌐 サイトを公開する'}
+      {isPublishing ? '公開中...' : '🌐 ホームページを公開する'}
     </button>
   )
 }

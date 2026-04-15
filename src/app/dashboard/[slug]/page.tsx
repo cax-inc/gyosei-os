@@ -56,13 +56,20 @@ export default async function DashboardPage({ params }: Props) {
 
       {/* 公開URL */}
       {site.status === 'published' && (
-        <div className="mb-6 flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-5 py-3">
-          <span className="text-sm">🌐</span>
-          <span className="text-xs text-gray-500 shrink-0">公開中のホームページURL</span>
-          <a href={siteUrl(slug)} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 font-medium hover:underline truncate">
-            {siteUrl(slug).replace('https://', '')}
-          </a>
-          <CopyUrlButton url={siteUrl(slug)} />
+        <div className="mb-6 bg-white rounded-xl border border-gray-200 px-5 py-3">
+          <div className="flex items-center gap-3">
+            <span className="text-sm">🌐</span>
+            <span className="text-xs text-gray-500 shrink-0">公開中のホームページURL</span>
+            <a href={siteUrl(slug)} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 font-medium hover:underline truncate">
+              {siteUrl(slug).replace('https://', '')}
+            </a>
+            <CopyUrlButton url={siteUrl(slug)} />
+          </div>
+          <div className="mt-2 ml-7">
+            <Link href={`/onboard/preview/${slug}`} className="text-xs text-gray-400 hover:text-gray-600">
+              ✏️ ホームページを編集する
+            </Link>
+          </div>
         </div>
       )}
 

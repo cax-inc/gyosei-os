@@ -31,7 +31,7 @@ export function UnpublishButton({ slug }: Props) {
       disabled={loading}
       className="px-5 py-2 bg-white border border-gray-300 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 transition-colors"
     >
-      {loading ? '処理中...' : '非公開にする'}
+      {loading ? '処理中...' : 'ホームページを非公開にする'}
     </button>
   )
 }

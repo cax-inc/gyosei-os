@@ -5,9 +5,10 @@ import { useState, useEffect } from 'react'
 interface Props {
   slug: string
   prefecture: string
+  siteUrl: string
 }
 
-export function WelcomeCard({ slug, prefecture }: Props) {
+export function WelcomeCard({ slug, prefecture, siteUrl }: Props) {
   const [visible, setVisible] = useState(false)
   const storageKey = `welcome-dismissed-${slug}`
 
@@ -61,9 +62,17 @@ export function WelcomeCard({ slug, prefecture }: Props) {
           <span className="shrink-0 w-6 h-6 bg-indigo-600 text-white text-xs font-bold rounded-full flex items-center justify-center">2</span>
           <div>
             <p className="text-sm font-semibold text-gray-800">サイトを公開する</p>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
               準備ができたら、この画面の右上にある「公開する」ボタンをクリックしてください。
+              公開・非公開はいつでも切り替えられます。
             </p>
+            <div className="mt-2 bg-white rounded-lg border border-gray-200 p-3">
+              <p className="text-xs font-semibold text-gray-700 mb-1">公開されたか確認するには</p>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                お使いのスマホやパソコンのブラウザ（Google Chromeなど）で、以下のURLにアクセスしてみてください。サイトが表示されれば公開されています。
+              </p>
+              <p className="mt-1.5 text-xs font-semibold text-indigo-600 break-all">{siteUrl}</p>
+            </div>
           </div>
         </div>
 

@@ -8,6 +8,8 @@ import { UnpublishButton } from '@/components/dashboard/UnpublishButton'
 import { SocialLinksEditor } from '@/components/dashboard/SocialLinksEditor'
 import { MapAddressEditor } from '@/components/dashboard/MapAddressEditor'
 import { WelcomeCard } from '@/components/dashboard/WelcomeCard'
+import { CopyUrlButton } from '@/components/dashboard/CopyUrlButton'
+import { siteUrl } from '@/lib/urls'
 import type { SiteContent } from '@/lib/ai-site/types'
 
 interface Props {
@@ -64,7 +66,19 @@ export default async function DashboardPage({ params }: Props) {
       </div>
 
       {/* 初回ログイン案内 */}
-      <WelcomeCard slug={slug} prefecture={site.prefecture} />
+      <WelcomeCard slug={slug} prefecture={site.prefecture} siteUrl={siteUrl(slug)} />
+
+      {/* 公開URL */}
+      {site.status === 'published' && (
+        <div className="mb-6 flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-5 py-3">
+          <span className="text-sm">🌐</span>
+          <span className="text-xs text-gray-500 shrink-0">あなたのサイト</span>
+          <a href={siteUrl(slug)} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 font-medium hover:underline truncate">
+            {siteUrl(slug).replace('https://', '')}
+          </a>
+          <CopyUrlButton url={siteUrl(slug)} />
+        </div>
+      )}
 
       {/* KPI カード */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

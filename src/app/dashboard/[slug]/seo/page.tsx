@@ -79,9 +79,9 @@ export default async function SeoPage({ params }: Props) {
 
       {/* キーワード候補から生成 */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-1">AIキーワード候補</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-1">AIで自動生成</h2>
         <p className="text-xs text-gray-500 mb-5">
-          クリックするとAIがSEOページを自動生成します（1ページ約20秒）
+          クリックするとAIが業務別ページを自動生成します（1ページ約20秒）
         </p>
         {keywords.length === 0 ? (
           <p className="text-sm text-gray-400">キーワード候補がありません</p>

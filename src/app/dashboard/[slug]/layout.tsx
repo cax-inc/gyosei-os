@@ -80,6 +80,12 @@ export default async function DashboardLayout({ children, params }: Props) {
           >
             ← プレビューに戻る
           </Link>
+          <Link
+            href={`/dashboard/${slug}/settings`}
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600"
+          >
+            ⚙ 設定
+          </Link>
           <LogoutButton />
         </div>
       </aside>
